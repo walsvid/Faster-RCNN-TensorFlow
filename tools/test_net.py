@@ -9,11 +9,11 @@
 
 """Test a Fast R-CNN network on an image database."""
 
-import _init_paths
-from fast_rcnn.test import test_net
-from fast_rcnn.config import cfg, cfg_from_file
-from datasets.factory import get_imdb
-from networks.factory import get_network
+from . import _init_paths
+from lib.fast_rcnn.test import test_net
+from lib.fast_rcnn.config import cfg, cfg_from_file
+from lib.datasets.factory import get_imdb
+from lib.networks.factory import get_network
 import argparse
 import pprint
 import time, os, sys
@@ -77,10 +77,10 @@ if __name__ == '__main__':
     imdb.competition_mode(args.comp_mode)
 
     device_name = '/{}:{:d}'.format(args.device,args.device_id)
-    print device_name
+    print(device_name)
 
     network = get_network(args.network_name)
-    print 'Use network `{:s}` in training'.format(args.network_name)
+    print('Use network `{:s}` in training'.format(args.network_name))
 
     if args.device == 'gpu':
         cfg.USE_GPU_NMS = True

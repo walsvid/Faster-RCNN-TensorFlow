@@ -1,10 +1,11 @@
+import functools
 import numpy as np
 import tensorflow as tf
-from lib.roi_pooling_layer import roi_pooling_op as roi_pool_op
-from lib.roi_pooling_layer import roi_pooling_op_grad
-from lib.rpn_msr.proposal_layer_tf import proposal_layer as proposal_layer_py
-from lib.rpn_msr.anchor_target_layer_tf import anchor_target_layer as anchor_target_layer_py
-from lib.rpn_msr.proposal_target_layer_tf import proposal_target_layer as proposal_target_layer_py
+from ..roi_pooling_layer import roi_pooling_op as roi_pool_op
+from ..roi_pooling_layer import roi_pooling_op_grad
+from ..rpn_msr.proposal_layer import proposal_layer as proposal_layer_py
+from ..rpn_msr.anchor_target_layer import anchor_target_layer as anchor_target_layer_py
+from ..rpn_msr.proposal_target_layer import proposal_target_layer as proposal_target_layer_py
 
 DEFAULT_PADDING = 'SAME'
 
@@ -97,7 +98,8 @@ class Network(object):
         c_i = inputs.get_shape()[-1]
         assert c_i % group == 0
         assert c_o % group == 0
-        convolve = lambda i, k: tf.nn.conv2d(i, k, [1, s_h, s_w, 1], padding=padding)
+        convolve = functools.partial(tf.nn.conv2d, strides=[1, s_h, s_w, 1], padding=padding)
+        # convolve = lambda i, k: tf.nn.conv2d(i, k, strides=[1, s_h, s_w, 1], padding=padding)
         with tf.variable_scope(name) as scope:
 
             init_weights = tf.truncated_normal_initializer(0.0, stddev=0.01)
@@ -212,7 +214,7 @@ class Network(object):
             return tf.transpose(tf.reshape(tf.transpose(inputs, [0, 3, 1, 2]), [input_shape[0],
                                                                                 int(d), tf.cast(
                     tf.cast(input_shape[1], tf.float32) * (
-                                tf.cast(input_shape[3], tf.float32) / tf.cast(d, tf.float32)), tf.int32),
+                            tf.cast(input_shape[3], tf.float32) / tf.cast(d, tf.float32)), tf.int32),
                                                                                 input_shape[2]]), [0, 2, 3, 1],
                                 name=name)
 

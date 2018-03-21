@@ -9,11 +9,11 @@
 
 """Train a Fast R-CNN network on a region of interest database."""
 
-import _init_paths
-from fast_rcnn.train import get_training_roidb, train_net
-from fast_rcnn.config import cfg,cfg_from_file, cfg_from_list, get_output_dir
-from datasets.factory import get_imdb
-from networks.factory import get_network
+from . import _init_paths
+from lib.fast_rcnn.train import get_training_roidb, train_net
+from lib.fast_rcnn.config import cfg,cfg_from_file, cfg_from_list, get_output_dir
+from lib.datasets.factory import get_imdb
+from lib.networks.factory import get_network
 import argparse
 import pprint
 import numpy as np
@@ -79,17 +79,17 @@ if __name__ == '__main__':
         # fix the random seeds (numpy and caffe) for reproducibility
         np.random.seed(cfg.RNG_SEED)
     imdb = get_imdb(args.imdb_name)
-    print 'Loaded dataset `{:s}` for training'.format(imdb.name)
+    print('Loaded dataset `{:s}` for training'.format(imdb.name))
     roidb = get_training_roidb(imdb)
 
     output_dir = get_output_dir(imdb, None)
-    print 'Output will be saved to `{:s}`'.format(output_dir)
+    print('Output will be saved to `{:s}`'.format(output_dir))
 
     device_name = '/{}:{:d}'.format(args.device,args.device_id)
-    print device_name
+    print(device_name)
 
     network = get_network(args.network_name)
-    print 'Use network `{:s}` in training'.format(args.network_name)
+    print('Use network `{:s}` in training'.format(args.network_name))
 
     train_net(network, imdb, roidb, output_dir,
               pretrained_model=args.pretrained_model,
