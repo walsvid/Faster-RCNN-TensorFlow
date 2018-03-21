@@ -1,11 +1,11 @@
 import functools
 import numpy as np
 import tensorflow as tf
-from lib.roi_pooling_layer import roi_pooling_op as roi_pool_op
-from lib.roi_pooling_layer import roi_pooling_op_grad
-from lib.rpn_msr.proposal_layer_tf import proposal_layer as proposal_layer_py
-from lib.rpn_msr.anchor_target_layer_tf import anchor_target_layer as anchor_target_layer_py
-from lib.rpn_msr.proposal_target_layer_tf import proposal_target_layer as proposal_target_layer_py
+from ..roi_pooling_layer import roi_pooling_op as roi_pool_op
+from ..roi_pooling_layer import roi_pooling_op_grad
+from ..rpn_msr.proposal_layer import proposal_layer as proposal_layer_py
+from ..rpn_msr.anchor_target_layer import anchor_target_layer as anchor_target_layer_py
+from ..rpn_msr.proposal_target_layer import proposal_target_layer as proposal_target_layer_py
 
 DEFAULT_PADDING = 'SAME'
 
