@@ -1,7 +1,7 @@
 import tensorflow as tf
 import numpy as np
-from . import roi_pooling_op
-from . import roi_pooling_op_grad
+import roi_pooling_op
+import roi_pooling_op_grad
 import pdb
 
 
@@ -37,7 +37,7 @@ init = tf.initialize_all_variables()
 sess = tf.Session(config=tf.ConfigProto(log_device_placement=True))
 sess.run(init)
 pdb.set_trace()
-for step in xrange(10):
+for step in range(10):
     sess.run(train)
     print(step, sess.run(W))
     print(sess.run(y))

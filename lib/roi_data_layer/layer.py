@@ -10,8 +10,8 @@
 RoIDataLayer implements a Caffe Python layer.
 """
 
-from lib.fast_rcnn.config import cfg
-from lib.roi_data_layer.minibatch import get_minibatch
+from fast_rcnn.config import cfg
+from roi_data_layer.minibatch import get_minibatch
 import numpy as np
 
 
