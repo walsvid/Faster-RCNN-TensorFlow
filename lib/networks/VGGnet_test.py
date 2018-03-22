@@ -1,5 +1,5 @@
 import tensorflow as tf
-from .network import Network
+from networks.network import Network
 
 n_classes = 21
 _feat_stride = [16, ]
@@ -7,8 +7,7 @@ anchor_scales = [8, 16, 32]
 
 
 class VGGnet_test(Network):
-    def __init__(self, inputs, trainable=True):
-        super().__init__(inputs, trainable)
+    def __init__(self, trainable=True):
         self.inputs = []
         self.data = tf.placeholder(tf.float32, shape=[None, None, None, 3])
         self.im_info = tf.placeholder(tf.float32, shape=[None, 3])
