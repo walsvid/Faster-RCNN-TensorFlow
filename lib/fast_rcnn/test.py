@@ -345,7 +345,7 @@ def test_net(sess, net, imdb, weights_filename, max_per_image=300, thresh=0.05, 
 
     det_file = os.path.join(output_dir, 'detections.pkl')
     with open(det_file, 'wb') as f:
-        cPickle.dump(all_boxes, f, cPickle.HIGHEST_PROTOCOL)
+        pickle.dump(all_boxes, f, pickle.HIGHEST_PROTOCOL)
 
     print('Evaluating detections')
     imdb.evaluate_detections(all_boxes, output_dir)
