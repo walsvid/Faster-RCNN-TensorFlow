@@ -7,12 +7,12 @@
 
 import os
 import yaml
-from lib.fast_rcnn.config import cfg
+from fast_rcnn.config import cfg
 import numpy as np
 import numpy.random as npr
-from lib.rpn_msr.generate_anchors import generate_anchors
-from lib.utils.cython_bbox import bbox_overlaps
-from lib.fast_rcnn.bbox_transform import bbox_transform
+from rpn_msr.generate_anchors import generate_anchors
+from utils.cython_bbox import bbox_overlaps
+from fast_rcnn.bbox_transform import bbox_transform
 import pdb
 
 DEBUG = False

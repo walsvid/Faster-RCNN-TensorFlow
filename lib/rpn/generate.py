@@ -5,9 +5,9 @@
 # Written by Ross Girshick
 # --------------------------------------------------------
 
-from lib.fast_rcnn.config import cfg
-from lib.utils.blob import im_list_to_blob
-from lib.utils.timer import Timer
+from fast_rcnn.config import cfg
+from utils.blob import im_list_to_blob
+from utils.timer import Timer
 from matplotlib import pyplot as plt
 import numpy as np
 import cv2

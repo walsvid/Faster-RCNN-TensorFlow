@@ -8,9 +8,9 @@
 import yaml
 import numpy as np
 import numpy.random as npr
-from lib.fast_rcnn.config import cfg
-from lib.fast_rcnn.bbox_transform import bbox_transform
-from lib.utils.cython_bbox import bbox_overlaps
+from fast_rcnn.config import cfg
+from fast_rcnn.bbox_transform import bbox_transform
+from utils.cython_bbox import bbox_overlaps
 import pdb
 
 DEBUG = False
