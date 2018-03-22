@@ -10,7 +10,7 @@ import yaml
 from fast_rcnn.config import cfg
 import numpy as np
 import numpy.random as npr
-from rpn_msr.generate_anchors import generate_anchors
+from rpn.generate_anchors import generate_anchors
 from utils.cython_bbox import bbox_overlaps
 from fast_rcnn.bbox_transform import bbox_transform
 import pdb
