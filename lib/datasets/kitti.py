@@ -13,7 +13,7 @@ import subprocess
 import cPickle
 from fast_rcnn.config import cfg
 import math
-from rpn_msr.generate_anchors import generate_anchors
+from rpn.generate_anchors import generate_anchors
 
 class kitti(datasets.imdb):
     def __init__(self, image_set, kitti_path=None):

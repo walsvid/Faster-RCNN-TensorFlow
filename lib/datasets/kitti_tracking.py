@@ -13,7 +13,7 @@ import subprocess
 import cPickle
 from fast_rcnn.config import cfg
 import math
-from rpn_msr.generate_anchors import generate_anchors
+from rpn.generate_anchors import generate_anchors
 
 class kitti_tracking(datasets.imdb):
     def __init__(self, image_set, seq_name, kitti_tracking_path=None):
