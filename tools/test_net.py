@@ -9,11 +9,11 @@
 
 """Test a Fast R-CNN network on an image database."""
 
-from . import _init_paths
-from lib.fast_rcnn.test import test_net
-from lib.fast_rcnn.config import cfg, cfg_from_file
-from lib.datasets.factory import get_imdb
-from lib.networks.factory import get_network
+import _init_paths
+from fast_rcnn.test import test_net
+from fast_rcnn.config import cfg, cfg_from_file
+from datasets.factory import get_imdb
+from networks.factory import get_network
 import argparse
 import pprint
 import time, os, sys
