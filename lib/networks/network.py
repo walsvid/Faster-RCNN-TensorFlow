@@ -1,11 +1,13 @@
 import functools
 import numpy as np
 import tensorflow as tf
-from ..roi_pooling_layer import roi_pooling_op as roi_pool_op
-from ..roi_pooling_layer import roi_pooling_op_grad
-from ..rpn_msr.proposal_layer import proposal_layer as proposal_layer_py
-from ..rpn_msr.anchor_target_layer import anchor_target_layer as anchor_target_layer_py
-from ..rpn_msr.proposal_target_layer import proposal_target_layer as proposal_target_layer_py
+import roi_pooling_layer.roi_pooling_op as roi_pool_op
+import roi_pooling_layer.roi_pooling_op_grad
+from rpn.proposal_layer import proposal_layer as proposal_layer_py
+from rpn.anchor_target_layer import anchor_target_layer as anchor_target_layer_py
+from rpn.proposal_target_layer import proposal_target_layer as proposal_target_layer_py
+
+
 
 DEFAULT_PADDING = 'SAME'
 
@@ -96,6 +98,7 @@ class Network(object):
     def conv(self, inputs, k_h, k_w, c_o, s_h, s_w, name, relu=True, padding=DEFAULT_PADDING, group=1, trainable=True):
         self.validate_padding(padding)
         c_i = inputs.get_shape()[-1]
+        c_i = int(c_i)
         assert c_i % group == 0
         assert c_o % group == 0
         convolve = functools.partial(tf.nn.conv2d, strides=[1, s_h, s_w, 1], padding=padding)

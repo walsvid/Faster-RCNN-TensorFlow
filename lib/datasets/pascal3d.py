@@ -21,7 +21,7 @@ from utils.cython_bbox import bbox_overlaps
 from utils.boxes_grid import get_boxes_grid
 from fast_rcnn.config import cfg
 import math
-from rpn_msr.generate_anchors import generate_anchors
+from rpn.generate_anchors import generate_anchors
 import sys
 
 class pascal3d(datasets.imdb):

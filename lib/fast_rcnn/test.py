@@ -1,18 +1,18 @@
-from lib.fast_rcnn.config import cfg, get_output_dir
+from fast_rcnn.config import cfg, get_output_dir
 import argparse
-from lib.utils.timer import Timer
+from utils.timer import Timer
 import numpy as np
 import cv2
-from lib.utils.cython_nms import nms, nms_new
-from lib.utils.boxes_grid import get_boxes_grid
+from utils.cython_nms import nms, nms_new
+from utils.boxes_grid import get_boxes_grid
 import pickle
 import heapq
-from lib.utils.blob import im_list_to_blob
+from utils.blob import im_list_to_blob
 import os
 import math
-from lib.rpn_msr.generate import imdb_proposals_det
+from rpn.generate import imdb_proposals_det
 import tensorflow as tf
-from lib.fast_rcnn.bbox_transform import clip_boxes, bbox_transform_inv
+from fast_rcnn.bbox_transform import clip_boxes, bbox_transform_inv
 import matplotlib.pyplot as plt
 from tensorflow.python.client import timeline
 import time

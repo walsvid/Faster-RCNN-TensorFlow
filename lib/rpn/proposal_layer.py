@@ -7,10 +7,10 @@
 
 import numpy as np
 import yaml
-from lib.fast_rcnn.config import cfg
-from lib.rpn_msr.generate_anchors import generate_anchors
-from lib.fast_rcnn.bbox_transform import bbox_transform_inv, clip_boxes
-from lib.fast_rcnn.nms_wrapper import nms
+from fast_rcnn.config import cfg
+from rpn.generate_anchors import generate_anchors
+from fast_rcnn.bbox_transform import bbox_transform_inv, clip_boxes
+from fast_rcnn.nms_wrapper import nms
 import pdb
 
 
@@ -45,6 +45,8 @@ def proposal_layer(rpn_cls_prob_reshape,rpn_bbox_pred,im_info,cfg_key,_feat_stri
         'Only single item batches are supported'
     # cfg_key = str(self.phase) # either 'TRAIN' or 'TEST'
     #cfg_key = 'TEST'
+    if type(cfg_key) == bytes:
+        cfg_key = cfg_key.decode('utf-8')
     pre_nms_topN  = cfg[cfg_key].RPN_PRE_NMS_TOP_N
     post_nms_topN = cfg[cfg_key].RPN_POST_NMS_TOP_N
     nms_thresh    = cfg[cfg_key].RPN_NMS_THRESH

@@ -10,8 +10,8 @@
 import numpy as np
 import numpy.random as npr
 import cv2
-from lib.fast_rcnn.config import cfg
-from lib.utils.blob import prep_im_for_blob, im_list_to_blob
+from fast_rcnn.config import cfg
+from utils.blob import prep_im_for_blob, im_list_to_blob
 
 
 def get_minibatch(roidb, num_classes):

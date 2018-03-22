@@ -8,9 +8,9 @@
 """Transform a roidb into a trainable roidb by adding a bunch of metadata."""
 
 import numpy as np
-from lib.fast_rcnn.config import cfg
-from lib.fast_rcnn.bbox_transform import bbox_transform
-from lib.utils.cython_bbox import bbox_overlaps
+from fast_rcnn.config import cfg
+from fast_rcnn.bbox_transform import bbox_transform
+from utils.cython_bbox import bbox_overlaps
 from PIL import Image
 
 

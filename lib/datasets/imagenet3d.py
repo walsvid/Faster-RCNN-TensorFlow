@@ -13,7 +13,7 @@ import subprocess
 import cPickle
 from fast_rcnn.config import cfg
 import math
-from rpn_msr.generate_anchors import generate_anchors
+from rpn.generate_anchors import generate_anchors
 import sys
 
 class imagenet3d(datasets.imdb):
