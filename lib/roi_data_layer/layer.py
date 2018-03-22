@@ -14,6 +14,7 @@ from fast_rcnn.config import cfg
 from roi_data_layer.minibatch import get_minibatch
 import numpy as np
 
+
 class RoIDataLayer(object):
     """Fast R-CNN data layer used for training."""
 
@@ -39,9 +40,9 @@ class RoIDataLayer(object):
             self._cur += cfg.TRAIN.IMS_PER_BATCH
         else:
             # sample images
-            db_inds = np.zeros((cfg.TRAIN.IMS_PER_BATCH), dtype=np.int32)
+            db_inds = np.zeros(cfg.TRAIN.IMS_PER_BATCH, dtype=np.int32)
             i = 0
-            while (i < cfg.TRAIN.IMS_PER_BATCH):
+            while i < cfg.TRAIN.IMS_PER_BATCH:
                 ind = self._perm[self._cur]
                 num_objs = self._roidb[ind]['boxes'].shape[0]
                 if num_objs != 0:

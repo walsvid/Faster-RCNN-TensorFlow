@@ -7,6 +7,7 @@
 
 import numpy as np
 
+
 def bbox_transform(ex_rois, gt_rois):
     ex_widths = ex_rois[:, 2] - ex_rois[:, 0] + 1.0
     ex_heights = ex_rois[:, 3] - ex_rois[:, 1] + 1.0
@@ -26,6 +27,7 @@ def bbox_transform(ex_rois, gt_rois):
     targets = np.vstack(
         (targets_dx, targets_dy, targets_dw, targets_dh)).transpose()
     return targets
+
 
 def bbox_transform_inv(boxes, deltas):
     if boxes.shape[0] == 0:
@@ -59,6 +61,7 @@ def bbox_transform_inv(boxes, deltas):
     pred_boxes[:, 3::4] = pred_ctr_y + 0.5 * pred_h
 
     return pred_boxes
+
 
 def clip_boxes(boxes, im_shape):
     """

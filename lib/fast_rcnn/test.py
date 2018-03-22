@@ -5,17 +5,18 @@ import numpy as np
 import cv2
 from utils.cython_nms import nms, nms_new
 from utils.boxes_grid import get_boxes_grid
-import cPickle
+import pickle
 import heapq
 from utils.blob import im_list_to_blob
 import os
 import math
-from rpn_msr.generate import imdb_proposals_det
+from rpn.generate import imdb_proposals_det
 import tensorflow as tf
 from fast_rcnn.bbox_transform import clip_boxes, bbox_transform_inv
 import matplotlib.pyplot as plt
 from tensorflow.python.client import timeline
 import time
+
 
 def _get_image_blob(im):
     """Converts an image into a network input.
@@ -51,6 +52,7 @@ def _get_image_blob(im):
 
     return blob, np.array(im_scale_factors)
 
+
 def _get_rois_blob(im_rois, im_scale_factors):
     """Converts RoIs into network inputs.
     Arguments:
@@ -62,6 +64,7 @@ def _get_rois_blob(im_rois, im_scale_factors):
     rois, levels = _project_im_rois(im_rois, im_scale_factors)
     rois_blob = np.hstack((levels, rois))
     return rois_blob.astype(np.float32, copy=False)
+
 
 def _project_im_rois(im_rois, scales):
     """Project image RoIs into the image pyramid built by _get_image_blob.
@@ -90,13 +93,14 @@ def _project_im_rois(im_rois, scales):
 
     return rois, levels
 
+
 def _get_blobs(im, rois):
     """Convert an image and RoIs within that image into network inputs."""
     if cfg.TEST.HAS_RPN:
-        blobs = {'data' : None, 'rois' : None}
+        blobs = {'data': None, 'rois': None}
         blobs['data'], im_scale_factors = _get_image_blob(im)
     else:
-        blobs = {'data' : None, 'rois' : None}
+        blobs = {'data': None, 'rois': None}
         blobs['data'], im_scale_factors = _get_image_blob(im)
         if cfg.IS_MULTISCALE:
             if cfg.IS_EXTRAPOLATING:
@@ -107,6 +111,7 @@ def _get_blobs(im, rois):
             blobs['rois'] = _get_rois_blob(rois, cfg.TEST.SCALES_BASE)
 
     return blobs, im_scale_factors
+
 
 def _clip_boxes(boxes, im_shape):
     """Clip boxes to image boundaries."""
@@ -124,8 +129,8 @@ def _clip_boxes(boxes, im_shape):
 def _rescale_boxes(boxes, inds, scales):
     """Rescale boxes according to image rescaling."""
 
-    for i in xrange(boxes.shape[0]):
-        boxes[i,:] = boxes[i,:] / scales[int(inds[i])]
+    for i in range(boxes.shape[0]):
+        boxes[i, :] = boxes[i, :] / scales[int(inds[i])]
 
     return boxes
 
@@ -163,9 +168,9 @@ def im_detect(sess, net, im, boxes=None):
             dtype=np.float32)
     # forward pass
     if cfg.TEST.HAS_RPN:
-        feed_dict={net.data: blobs['data'], net.im_info: blobs['im_info'], net.keep_prob: 1.0}
+        feed_dict = {net.data: blobs['data'], net.im_info: blobs['im_info'], net.keep_prob: 1.0}
     else:
-        feed_dict={net.data: blobs['data'], net.rois: blobs['rois'], net.keep_prob: 1.0}
+        feed_dict = {net.data: blobs['data'], net.rois: blobs['rois'], net.keep_prob: 1.0}
 
     run_options = None
     run_metadata = None
@@ -173,15 +178,15 @@ def im_detect(sess, net, im, boxes=None):
         run_options = tf.RunOptions(trace_level=tf.RunOptions.FULL_TRACE)
         run_metadata = tf.RunMetadata()
 
-    cls_score, cls_prob, bbox_pred, rois = sess.run([net.get_output('cls_score'), net.get_output('cls_prob'), net.get_output('bbox_pred'),net.get_output('rois')],
-                                                    feed_dict=feed_dict,
-                                                    options=run_options,
-                                                    run_metadata=run_metadata)
+    cls_score, cls_prob, bbox_pred, rois = sess.run(
+        [net.get_output('cls_score'), net.get_output('cls_prob'), net.get_output('bbox_pred'), net.get_output('rois')],
+        feed_dict=feed_dict,
+        options=run_options,
+        run_metadata=run_metadata)
 
     if cfg.TEST.HAS_RPN:
         assert len(im_scales) == 1, "Only single-image batch implemented"
         boxes = rois[:, 1:5] / im_scales[0]
-
 
     if cfg.TEST.SVM:
         # use the raw scores before softmax under the assumption they
@@ -207,7 +212,7 @@ def im_detect(sess, net, im, boxes=None):
 
     if cfg.TEST.DEBUG_TIMELINE:
         trace = timeline.Timeline(step_stats=run_metadata.step_stats)
-        trace_file = open(str(long(time.time() * 1000)) + '-test-timeline.ctf.json', 'w')
+        trace_file = open(str(int(time.time() * 1000)) + '-test-timeline.ctf.json', 'w')
         trace_file.write(trace.generate_chrome_trace_format(show_memory=False))
         trace_file.close()
 
@@ -217,26 +222,27 @@ def im_detect(sess, net, im, boxes=None):
 def vis_detections(im, class_name, dets, thresh=0.8):
     """Visual debugging of detections."""
     import matplotlib.pyplot as plt
-    #im = im[:, :, (2, 1, 0)]
-    for i in xrange(np.minimum(10, dets.shape[0])):
+    # im = im[:, :, (2, 1, 0)]
+    for i in range(np.minimum(10, dets.shape[0])):
         bbox = dets[i, :4]
         score = dets[i, -1]
         if score > thresh:
-            #plt.cla()
-            #plt.imshow(im)
+            # plt.cla()
+            # plt.imshow(im)
             plt.gca().add_patch(
                 plt.Rectangle((bbox[0], bbox[1]),
                               bbox[2] - bbox[0],
                               bbox[3] - bbox[1], fill=False,
                               edgecolor='g', linewidth=3)
-                )
+            )
             plt.gca().text(bbox[0], bbox[1] - 2,
-                 '{:s} {:.3f}'.format(class_name, score),
-                 bbox=dict(facecolor='blue', alpha=0.5),
-                 fontsize=14, color='white')
+                           '{:s} {:.3f}'.format(class_name, score),
+                           bbox=dict(facecolor='blue', alpha=0.5),
+                           fontsize=14, color='white')
 
             plt.title('{}  {:.3f}'.format(class_name, score))
-    #plt.show()
+    # plt.show()
+
 
 def apply_nms(all_boxes, thresh):
     """Apply non-maximum suppression to all predicted boxes output by the
@@ -244,10 +250,10 @@ def apply_nms(all_boxes, thresh):
     """
     num_classes = len(all_boxes)
     num_images = len(all_boxes[0])
-    nms_boxes = [[[] for _ in xrange(num_images)]
-                 for _ in xrange(num_classes)]
-    for cls_ind in xrange(num_classes):
-        for im_ind in xrange(num_images):
+    nms_boxes = [[[] for _ in range(num_images)]
+                 for _ in range(num_classes)]
+    for cls_ind in range(num_classes):
+        for im_ind in range(num_images):
             dets = all_boxes[cls_ind][im_ind]
             if dets == []:
                 continue
@@ -258,7 +264,7 @@ def apply_nms(all_boxes, thresh):
             y2 = dets[:, 3]
             scores = dets[:, 4]
             inds = np.where((x2 > x1) & (y2 > y1) & (scores > cfg.TEST.DET_THRESHOLD))[0]
-            dets = dets[inds,:]
+            dets = dets[inds, :]
             if dets == []:
                 continue
 
@@ -269,23 +275,23 @@ def apply_nms(all_boxes, thresh):
     return nms_boxes
 
 
-def test_net(sess, net, imdb, weights_filename , max_per_image=300, thresh=0.05, vis=False):
+def test_net(sess, net, imdb, weights_filename, max_per_image=300, thresh=0.05, vis=False):
     """Test a Fast R-CNN network on an image database."""
     num_images = len(imdb.image_index)
     # all detections are collected into:
     #    all_boxes[cls][image] = N x 5 array of detections in
     #    (x1, y1, x2, y2, score)
-    all_boxes = [[[] for _ in xrange(num_images)]
-                 for _ in xrange(imdb.num_classes)]
+    all_boxes = [[[] for _ in range(num_images)]
+                 for _ in range(imdb.num_classes)]
 
     output_dir = get_output_dir(imdb, weights_filename)
     # timers
-    _t = {'im_detect' : Timer(), 'misc' : Timer()}
+    _t = {'im_detect': Timer(), 'misc': Timer()}
 
     if not cfg.TEST.HAS_RPN:
         roidb = imdb.roidb
 
-    for i in xrange(num_images):
+    for i in range(num_images):
         # filter out any ground truth boxes
         if cfg.TEST.HAS_RPN:
             box_proposals = None
@@ -309,10 +315,10 @@ def test_net(sess, net, imdb, weights_filename , max_per_image=300, thresh=0.05,
             plt.imshow(image)
 
         # skip j = 0, because it's the background class
-        for j in xrange(1, imdb.num_classes):
+        for j in range(1, imdb.num_classes):
             inds = np.where(scores[:, j] > thresh)[0]
             cls_scores = scores[inds, j]
-            cls_boxes = boxes[inds, j*4:(j+1)*4]
+            cls_boxes = boxes[inds, j * 4:(j + 1) * 4]
             cls_dets = np.hstack((cls_boxes, cls_scores[:, np.newaxis])) \
                 .astype(np.float32, copy=False)
             keep = nms(cls_dets, cfg.TEST.NMS)
@@ -321,26 +327,25 @@ def test_net(sess, net, imdb, weights_filename , max_per_image=300, thresh=0.05,
                 vis_detections(image, imdb.classes[j], cls_dets)
             all_boxes[j][i] = cls_dets
         if vis:
-           plt.show()
+            plt.show()
         # Limit to max_per_image detections *over all classes*
         if max_per_image > 0:
             image_scores = np.hstack([all_boxes[j][i][:, -1]
-                                      for j in xrange(1, imdb.num_classes)])
+                                      for j in range(1, imdb.num_classes)])
             if len(image_scores) > max_per_image:
                 image_thresh = np.sort(image_scores)[-max_per_image]
-                for j in xrange(1, imdb.num_classes):
+                for j in range(1, imdb.num_classes):
                     keep = np.where(all_boxes[j][i][:, -1] >= image_thresh)[0]
                     all_boxes[j][i] = all_boxes[j][i][keep, :]
         _t['misc'].toc()
 
-        print 'im_detect: {:d}/{:d} {:.3f}s {:.3f}s' \
+        print('im_detect: {:d}/{:d} {:.3f}s {:.3f}s'
               .format(i + 1, num_images, _t['im_detect'].average_time,
-                      _t['misc'].average_time)
+                      _t['misc'].average_time))
 
     det_file = os.path.join(output_dir, 'detections.pkl')
     with open(det_file, 'wb') as f:
         cPickle.dump(all_boxes, f, cPickle.HIGHEST_PROTOCOL)
 
-    print 'Evaluating detections'
+    print('Evaluating detections')
     imdb.evaluate_detections(all_boxes, output_dir)
-

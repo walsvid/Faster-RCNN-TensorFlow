@@ -61,6 +61,7 @@ def parse_args():
     args = parser.parse_args()
     return args
 
+
 if __name__ == '__main__':
     args = parse_args()
 
@@ -79,17 +80,17 @@ if __name__ == '__main__':
         # fix the random seeds (numpy and caffe) for reproducibility
         np.random.seed(cfg.RNG_SEED)
     imdb = get_imdb(args.imdb_name)
-    print 'Loaded dataset `{:s}` for training'.format(imdb.name)
+    print('Loaded dataset `{:s}` for training'.format(imdb.name))
     roidb = get_training_roidb(imdb)
 
     output_dir = get_output_dir(imdb, None)
-    print 'Output will be saved to `{:s}`'.format(output_dir)
+    print('Output will be saved to `{:s}`'.format(output_dir))
 
     device_name = '/{}:{:d}'.format(args.device,args.device_id)
-    print device_name
+    print(device_name)
 
     network = get_network(args.network_name)
-    print 'Use network `{:s}` in training'.format(args.network_name)
+    print('Use network `{:s}` in training'.format(args.network_name))
 
     train_net(network, imdb, roidb, output_dir,
               pretrained_model=args.pretrained_model,

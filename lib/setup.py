@@ -46,7 +46,7 @@ def locate_cuda():
     cudaconfig = {'home':home, 'nvcc':nvcc,
                   'include': pjoin(home, 'include'),
                   'lib64': pjoin(home, 'lib64')}
-    for k, v in cudaconfig.iteritems():
+    for k, v in cudaconfig.items():
         if not os.path.exists(v):
             return None;
 
@@ -81,7 +81,7 @@ def customize_compiler_for_nvcc(self):
     # object but distutils doesn't have the ability to change compilers
     # based on source extension: we add it.
     def _compile(obj, src, ext, cc_args, extra_postargs, pp_opts):
-        print extra_postargs
+        print(extra_postargs)
         if os.path.splitext(src)[1] == '.cu':
             # use the cuda for .cu files
             self.set_executable('compiler_so', CUDA['nvcc'])
@@ -138,7 +138,7 @@ if CUDA:
             # we're only going to use certain compiler args with nvcc and not with gcc
             # the implementation of this trick is in customize_compiler() below
             extra_compile_args={'gcc': ["-Wno-unused-function"],
-                                'nvcc': ['-arch=sm_35',
+                                'nvcc': ['-arch=sm_61',
                                          '--ptxas-options=-v',
                                          '-c',
                                          '--compiler-options',

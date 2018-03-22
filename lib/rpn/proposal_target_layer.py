@@ -15,7 +15,8 @@ import pdb
 
 DEBUG = False
 
-def proposal_target_layer(rpn_rois, gt_boxes,_num_classes):
+
+def proposal_target_layer(rpn_rois, gt_boxes, _num_classes):
     """
     Assign object detection proposals to ground-truth targets. Produces proposal
     classification labels and bounding-box regression targets.
@@ -35,7 +36,7 @@ def proposal_target_layer(rpn_rois, gt_boxes,_num_classes):
 
     # Sanity check: single batch only
     assert np.all(all_rois[:, 0] == 0), \
-            'Only single item batches are supported'
+        'Only single item batches are supported'
 
     num_images = 1
     rois_per_image = cfg.TRAIN.BATCH_SIZE / num_images
@@ -48,23 +49,24 @@ def proposal_target_layer(rpn_rois, gt_boxes,_num_classes):
         rois_per_image, _num_classes)
 
     if DEBUG:
-        print 'num fg: {}'.format((labels > 0).sum())
-        print 'num bg: {}'.format((labels == 0).sum())
-        _count += 1
-        _fg_num += (labels > 0).sum()
-        _bg_num += (labels == 0).sum()
-        print 'num fg avg: {}'.format(_fg_num / _count)
-        print 'num bg avg: {}'.format(_bg_num / _count)
-        print 'ratio: {:.3f}'.format(float(_fg_num) / float(_bg_num))
+        print('num fg: {}'.format((labels > 0).sum()))
+        print('num bg: {}'.format((labels == 0).sum()))
+        # _count += 1
+        # _fg_num += (labels > 0).sum()
+        # _bg_num += (labels == 0).sum()
+        # print('num fg avg: {}'.format(_fg_num / _count))
+        # print('num bg avg: {}'.format(_bg_num / _count))
+        # print('ratio: {:.3f}'.format(float(_fg_num) / float(_bg_num)))
 
-    rois = rois.reshape(-1,5)
-    labels = labels.reshape(-1,1)
-    bbox_targets = bbox_targets.reshape(-1,_num_classes*4)
-    bbox_inside_weights = bbox_inside_weights.reshape(-1,_num_classes*4)
+    rois = rois.reshape(-1, 5)
+    labels = labels.reshape(-1, 1)
+    bbox_targets = bbox_targets.reshape(-1, _num_classes * 4)
+    bbox_inside_weights = bbox_inside_weights.reshape(-1, _num_classes * 4)
 
     bbox_outside_weights = np.array(bbox_inside_weights > 0).astype(np.float32)
 
-    return rois,labels,bbox_targets,bbox_inside_weights,bbox_outside_weights
+    return rois, labels, bbox_targets, bbox_inside_weights, bbox_outside_weights
+
 
 def _get_bbox_regression_labels(bbox_target_data, num_classes):
     """Bounding-box regression targets (bbox_target_data) are stored in a
@@ -102,9 +104,10 @@ def _compute_targets(ex_rois, gt_rois, labels):
     if cfg.TRAIN.BBOX_NORMALIZE_TARGETS_PRECOMPUTED:
         # Optionally normalize targets by a precomputed mean and stdev
         targets = ((targets - np.array(cfg.TRAIN.BBOX_NORMALIZE_MEANS))
-                / np.array(cfg.TRAIN.BBOX_NORMALIZE_STDS))
+                   / np.array(cfg.TRAIN.BBOX_NORMALIZE_STDS))
     return np.hstack(
-            (labels[:, np.newaxis], targets)).astype(np.float32, copy=False)
+        (labels[:, np.newaxis], targets)).astype(np.float32, copy=False)
+
 
 def _sample_rois(all_rois, gt_boxes, fg_rois_per_image, rois_per_image, num_classes):
     """Generate a random sample of RoIs comprising foreground and background
