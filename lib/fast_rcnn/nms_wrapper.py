@@ -5,10 +5,10 @@
 # Written by Ross Girshick
 # --------------------------------------------------------
 
-from lib.fast_rcnn.config import cfg
+from fast_rcnn.config import cfg
 if cfg.USE_GPU_NMS:
-    from lib.nms.gpu_nms import gpu_nms
-from lib.nms.cpu_nms import cpu_nms
+    from nms.gpu_nms import gpu_nms
+from nms.cpu_nms import cpu_nms
 
 
 def nms(dets, thresh, force_cpu=False):
