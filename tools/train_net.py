@@ -11,7 +11,7 @@
 
 import _init_paths
 from fast_rcnn.train import get_training_roidb, train_net
-from fast_rcnn.config import cfg,cfg_from_file, cfg_from_list, get_output_dir
+from fast_rcnn.config import cfg,cfg_from_file, cfg_from_list, get_output_dir, get_log_dir
 from datasets.factory import get_imdb
 from networks.factory import get_network
 import argparse
@@ -86,12 +86,15 @@ if __name__ == '__main__':
     output_dir = get_output_dir(imdb, None)
     print('Output will be saved to `{:s}`'.format(output_dir))
 
+    log_dir = get_log_dir(imdb)
+    print('Log will be saved to `{:s}`'.format(log_dir))
+
     device_name = '/{}:{:d}'.format(args.device,args.device_id)
     print(device_name)
 
     network = get_network(args.network_name)
     print('Use network `{:s}` in training'.format(args.network_name))
 
-    train_net(network, imdb, roidb, output_dir,
+    train_net(network, imdb, roidb, output_dir, log_dir,
               pretrained_model=args.pretrained_model,
               max_iters=args.max_iters)

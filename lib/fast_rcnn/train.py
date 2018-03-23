@@ -26,7 +26,7 @@ class SolverWrapper(object):
     use to unnormalize the learned bounding-box regression weights.
     """
 
-    def __init__(self, sess, saver, network, imdb, roidb, output_dir, pretrained_model=None):
+    def __init__(self, sess, saver, network, imdb, roidb, output_dir, log_dir, pretrained_model=None):
         """Initialize the SolverWrapper."""
         self.net = network
         self.imdb = imdb
@@ -41,6 +41,9 @@ class SolverWrapper(object):
 
         # For checkpoint
         self.saver = saver
+        # Log summary writer
+        self.summary = []
+        self.writer = tf.summary.FileWriter(logdir=log_dir, graph=tf.get_default_graph(), flush_secs=5)
 
     def snapshot(self, sess, iter):
         """Take a snapshot of the network after unnormalizing the learned
@@ -140,6 +143,15 @@ class SolverWrapper(object):
         # final loss
         loss = cross_entropy + loss_box + rpn_cross_entropy + rpn_loss_box
 
+        # summary
+        # scalar summary
+        self.summary.append(tf.summary.scalar('rpn_reg_loss', rpn_loss_box))
+        self.summary.append(tf.summary.scalar('rpn_cls_loss', rpn_cross_entropy))
+        self.summary.append(tf.summary.scalar('loss_box', loss_box))
+        self.summary.append(tf.summary.scalar('loss_cls', cross_entropy))
+        self.summary.append(tf.summary.scalar('total_loss', loss))
+        summary_op = tf.summary.merge(self.summary)
+
         # optimizer and learning rate
         global_step = tf.Variable(0, trainable=False)
         lr = tf.train.exponential_decay(cfg.TRAIN.LEARNING_RATE, global_step,
@@ -160,8 +172,8 @@ class SolverWrapper(object):
             blobs = data_layer.forward()
 
             # Make one SGD update
-            feed_dict={self.net.data: blobs['data'], self.net.im_info: blobs['im_info'], self.net.keep_prob: 0.5, \
-                           self.net.gt_boxes: blobs['gt_boxes']}
+            feed_dict = {self.net.data: blobs['data'], self.net.im_info: blobs['im_info'],
+                         self.net.keep_prob: 0.5, self.net.gt_boxes: blobs['gt_boxes']}
 
             run_options = None
             run_metadata = None
@@ -171,11 +183,11 @@ class SolverWrapper(object):
 
             timer.tic()
 
-            rpn_loss_cls_value, rpn_loss_box_value,loss_cls_value, loss_box_value, _ = sess.run([rpn_cross_entropy, rpn_loss_box, cross_entropy, loss_box, train_op],
-                                                                                                feed_dict=feed_dict,
-                                                                                                options=run_options,
-                                                                                                run_metadata=run_metadata)
+            rpn_loss_cls_value, rpn_loss_box_value,loss_cls_value,loss_box_value, \
+                summary_str, _ = sess.run([rpn_cross_entropy, rpn_loss_box, cross_entropy, loss_box, summary_op, train_op],
+                                          feed_dict=feed_dict, options=run_options, run_metadata=run_metadata)
 
+            self.writer.add_summary(summary=summary_str, global_step=global_step.eval())
             timer.toc()
 
             if cfg.TRAIN.DEBUG_TIMELINE:
@@ -245,12 +257,12 @@ def filter_roidb(roidb):
     return filtered_roidb
 
 
-def train_net(network, imdb, roidb, output_dir, pretrained_model=None, max_iters=40000):
+def train_net(network, imdb, roidb, output_dir, log_dir, pretrained_model=None, max_iters=40000):
     """Train a Fast R-CNN network."""
     roidb = filter_roidb(roidb)
     saver = tf.train.Saver(max_to_keep=100)
     with tf.Session(config=tf.ConfigProto(allow_soft_placement=True)) as sess:
-        sw = SolverWrapper(sess, saver, network, imdb, roidb, output_dir, pretrained_model=pretrained_model)
+        sw = SolverWrapper(sess, saver, network, imdb, roidb, output_dir, log_dir, pretrained_model=pretrained_model)
         print('Solving...')
         sw.train_model(sess, max_iters)
         print('done solving')
