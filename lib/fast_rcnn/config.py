@@ -22,6 +22,7 @@ import numpy as np
 from distutils import spawn
 # `pip install easydict` if you don't have it
 from easydict import EasyDict as edict
+from time import strftime, localtime
 
 __C = edict()
 # Consumers can get config by:
@@ -230,6 +231,9 @@ __C.MATLAB = 'matlab'
 # Place outputs under an experiments directory
 __C.EXP_DIR = 'default'
 
+# Place logs under an experiments directory
+__C.LOG_DIR = 'default'
+
 
 if spawn.find_executable("nvcc"):
     # Use GPU implementation of non-maximum suppression
@@ -255,6 +259,17 @@ def get_output_dir(imdb, weights_filename):
         os.makedirs(outdir)
     return outdir
 
+def get_log_dir(imdb):
+    """Return the directory where experimental artifacts are placed.
+    If the directory does not exist, it is created.
+    A canonical path is built using the name from an imdb and a network
+    (if not None).
+    """
+    log_dir = osp.abspath(osp.join(__C.ROOT_DIR, 'logs', __C.LOG_DIR, imdb.name, strftime("%Y-%m-%d-%H-%M-%S", localtime())))
+    if not os.path.exists(log_dir):
+        os.makedirs(log_dir)
+    return log_dir
+
 def _merge_a_into_b(a, b):
     """Merge config dictionary a into config dictionary b, clobbering the
     options in b whenever they are also specified in a.
@@ -262,9 +277,9 @@ def _merge_a_into_b(a, b):
     if type(a) is not edict:
         return
 
-    for k, v in a.iteritems():
+    for k, v in a.items():
         # a must specify keys that are in b
-        if not b.has_key(k):
+        if k not in b:
             raise KeyError('{} is not a valid config key'.format(k))
 
         # the types must match, too
@@ -273,9 +288,9 @@ def _merge_a_into_b(a, b):
             if isinstance(b[k], np.ndarray):
                 v = np.array(v, dtype=b[k].dtype)
             else:
-                raise ValueError(('Type mismatch ({} vs. {}) '
+                raise ValueError('Type mismatch ({} vs. {}) '
                                 'for config key: {}').format(type(b[k]),
-                                                            type(v), k))
+                                                            type(v), k)
 
         # recursively merge dicts
         if type(v) is edict:
@@ -303,10 +318,10 @@ def cfg_from_list(cfg_list):
         key_list = k.split('.')
         d = __C
         for subkey in key_list[:-1]:
-            assert d.has_key(subkey)
+            assert subkey in d
             d = d[subkey]
         subkey = key_list[-1]
-        assert d.has_key(subkey)
+        assert subkey in d
         try:
             value = literal_eval(v)
         except:
