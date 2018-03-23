@@ -150,8 +150,7 @@ class SolverWrapper(object):
         # iintialize variables
         sess.run(tf.global_variables_initializer())
         if self.pretrained_model is not None:
-            print ('Loading pretrained model '
-                   'weights from {:s}').format(self.pretrained_model)
+            print('Loading pretrained model weights from {:s}'.format(self.pretrained_model))
             self.net.load(self.pretrained_model, sess, self.saver, True)
 
         last_snapshot_iter = -1
