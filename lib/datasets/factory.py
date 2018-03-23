@@ -10,9 +10,9 @@
 __sets = {}
 
 import datasets.pascal_voc
-import datasets.imagenet3d
-import datasets.kitti
-import datasets.kitti_tracking
+# import datasets.imagenet3d
+# import datasets.kitti
+# import datasets.kitti_tracking
 import numpy as np
 
 def _selective_search_IJCV_top_k(split, year, top_k):
@@ -49,31 +49,31 @@ for year in ['2007']:
         __sets[name] = (lambda split=split, year=year:
                 datasets.pascal_voc(split, year))
 
-# KITTI dataset
-for split in ['train', 'val', 'trainval', 'test']:
-    name = 'kitti_{}'.format(split)
-    print(name)
-    __sets[name] = (lambda split=split:
-            datasets.kitti(split))
-
-# Set up coco_2014_<split>
-for year in ['2014']:
-    for split in ['train', 'val', 'minival', 'valminusminival']:
-        name = 'coco_{}_{}'.format(year, split)
-        __sets[name] = (lambda split=split, year=year: coco(split, year))
-
-# Set up coco_2015_<split>
-for year in ['2015']:
-    for split in ['test', 'test-dev']:
-        name = 'coco_{}_{}'.format(year, split)
-        __sets[name] = (lambda split=split, year=year: coco(split, year))
-
-# NTHU dataset
-for split in ['71', '370']:
-    name = 'nthu_{}'.format(split)
-    print(name)
-    __sets[name] = (lambda split=split:
-            datasets.nthu(split))
+# # KITTI dataset
+# for split in ['train', 'val', 'trainval', 'test']:
+#     name = 'kitti_{}'.format(split)
+#     print(name)
+#     __sets[name] = (lambda split=split:
+#             datasets.kitti(split))
+#
+# # Set up coco_2014_<split>
+# for year in ['2014']:
+#     for split in ['train', 'val', 'minival', 'valminusminival']:
+#         name = 'coco_{}_{}'.format(year, split)
+#         __sets[name] = (lambda split=split, year=year: coco(split, year))
+#
+# # Set up coco_2015_<split>
+# for year in ['2015']:
+#     for split in ['test', 'test-dev']:
+#         name = 'coco_{}_{}'.format(year, split)
+#         __sets[name] = (lambda split=split, year=year: coco(split, year))
+#
+# # NTHU dataset
+# for split in ['71', '370']:
+#     name = 'nthu_{}'.format(split)
+#     print(name)
+#     __sets[name] = (lambda split=split:
+#             datasets.nthu(split))
 
 
 def get_imdb(name):
