@@ -36,9 +36,9 @@ def layer(op):
 
 
 class Network(object):
-    def __init__(self, inputs, trainable=True):
+    def __init__(self, trainable=True):
         self.inputs = []
-        self.layers = dict(inputs)
+        self.layers = dict()
         self.trainable = trainable
         self.setup()
 
@@ -49,13 +49,15 @@ class Network(object):
         if data_path.endswith('.ckpt'):
             saver.restore(session, data_path)
         else:
-            data_dict = np.load(data_path).item()  # type: dict
+            data_dict = np.load(data_path, encoding='latin1').item()  # type: dict
             for key in data_dict.keys():
                 with tf.variable_scope(key, reuse=True):
-                    for subkey in data_dict[key]:
+                    # for subkey in data_dict[key]:
+                    for subkey, data in zip(('weights', 'biases'), data_dict[key]):
                         try:
-                            var = tf.get_variable(subkey)
-                            session.run(var.assign(data_dict[key][subkey]))
+                            # var = tf.get_variable(subkey)
+                            # session.run(var.assign(data_dict[key][subkey]))
+                            session.run(tf.get_variable(subkey).assign(data))
                             print("assign pretrain model " + subkey + " to " + key)
                         except ValueError:
                             print("ignore " + key)
