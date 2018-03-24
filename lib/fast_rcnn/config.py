@@ -194,6 +194,9 @@ __C.TEST.RPN_MIN_SIZE = 16
 # Enable timeline generation
 __C.TEST.DEBUG_TIMELINE = False
 
+# Checkpoint path
+__C.TEST.CHECKPOINTS_PATH = ''
+
 #
 # MISC
 #
