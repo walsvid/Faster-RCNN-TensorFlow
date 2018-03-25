@@ -67,6 +67,11 @@ if __name__ == '__main__':
     print('Using config:')
     pprint.pprint(cfg)
 
+    # if cfg.TEST.CHECKPOINTS_PATH is '':
+    #     ckpt_path = os.path.dirname(args.model)
+    # else:
+    #     ckpt_path = cfg.TEST.CHECKPOINTS_PATH
+
     while not os.path.exists(args.model) and args.wait:
         print('Waiting for {} to exist...'.format(args.model))
         time.sleep(10)
@@ -91,7 +96,18 @@ if __name__ == '__main__':
     # start a session
     saver = tf.train.Saver()
     sess = tf.Session(config=tf.ConfigProto(allow_soft_placement=True))
-    saver.restore(sess, args.model)
-    print ('Loading model weights from {:s}').format(args.model)
+
+    ckpt_path = os.path.dirname(args.model)
+    print(ckpt_path)
+    try:
+        ckpt = tf.train.get_checkpoint_state(ckpt_path)
+        print('Restoring from {}...'.format(ckpt.model_checkpoint_path), end=' ')
+        saver.restore(sess, ckpt.model_checkpoint_path)
+        print('done')
+    except :
+        raise 'Check your pretrained {:s}'.format(ckpt.model_checkpoint_path)
+
+    # saver.restore(sess, args.model)
+    # print('Loading model weights from {:s}'.format(args.model))
 
     test_net(sess, network, imdb, weights_filename)
