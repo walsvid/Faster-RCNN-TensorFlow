@@ -148,8 +148,19 @@ if __name__ == '__main__':
     # load network
     net = get_network(args.demo_net)
     # load model
-    saver = tf.train.Saver(write_version=tf.train.SaverDef.V1)
-    saver.restore(sess, args.model)
+    # saver = tf.train.Saver(write_version=tf.train.SaverDef.V1)
+    # saver.restore(sess, args.model)
+
+    ckpt_path = os.path.dirname(args.model)
+    print(ckpt_path)
+    saver = tf.train.Saver()
+    try:
+        ckpt = tf.train.get_checkpoint_state(ckpt_path)
+        print('Restoring from {}...'.format(ckpt.model_checkpoint_path), end=' ')
+        saver.restore(sess, ckpt.model_checkpoint_path)
+        print('done')
+    except :
+        raise 'Check your pretrained {:s}'.format(ckpt.model_checkpoint_path)
 
     # sess.run(tf.initialize_all_variables())
 
