@@ -3,7 +3,7 @@ import argparse
 from utils.timer import Timer
 import numpy as np
 import cv2
-from utils.cython_nms import nms, nms_new
+# from utils.cython_nms import nms, nms_new
 from utils.boxes_grid import get_boxes_grid
 import pickle
 import heapq
@@ -16,6 +16,7 @@ from fast_rcnn.bbox_transform import clip_boxes, bbox_transform_inv
 import matplotlib.pyplot as plt
 from tensorflow.python.client import timeline
 import time
+from fast_rcnn.nms_wrapper import nms
 
 
 def _get_image_blob(im):
@@ -244,35 +245,35 @@ def vis_detections(im, class_name, dets, thresh=0.8):
     # plt.show()
 
 
-def apply_nms(all_boxes, thresh):
-    """Apply non-maximum suppression to all predicted boxes output by the
-    test_net method.
-    """
-    num_classes = len(all_boxes)
-    num_images = len(all_boxes[0])
-    nms_boxes = [[[] for _ in range(num_images)]
-                 for _ in range(num_classes)]
-    for cls_ind in range(num_classes):
-        for im_ind in range(num_images):
-            dets = all_boxes[cls_ind][im_ind]
-            if dets == []:
-                continue
-
-            x1 = dets[:, 0]
-            y1 = dets[:, 1]
-            x2 = dets[:, 2]
-            y2 = dets[:, 3]
-            scores = dets[:, 4]
-            inds = np.where((x2 > x1) & (y2 > y1) & (scores > cfg.TEST.DET_THRESHOLD))[0]
-            dets = dets[inds, :]
-            if dets == []:
-                continue
-
-            keep = nms(dets, thresh)
-            if len(keep) == 0:
-                continue
-            nms_boxes[cls_ind][im_ind] = dets[keep, :].copy()
-    return nms_boxes
+# def apply_nms(all_boxes, thresh):
+#     """Apply non-maximum suppression to all predicted boxes output by the
+#     test_net method.
+#     """
+#     num_classes = len(all_boxes)
+#     num_images = len(all_boxes[0])
+#     nms_boxes = [[[] for _ in range(num_images)]
+#                  for _ in range(num_classes)]
+#     for cls_ind in range(num_classes):
+#         for im_ind in range(num_images):
+#             dets = all_boxes[cls_ind][im_ind]
+#             if dets == []:
+#                 continue
+#
+#             x1 = dets[:, 0]
+#             y1 = dets[:, 1]
+#             x2 = dets[:, 2]
+#             y2 = dets[:, 3]
+#             scores = dets[:, 4]
+#             inds = np.where((x2 > x1) & (y2 > y1) & (scores > cfg.TEST.DET_THRESHOLD))[0]
+#             dets = dets[inds, :]
+#             if dets == []:
+#                 continue
+#
+#             keep = nms(dets, thresh)
+#             if len(keep) == 0:
+#                 continue
+#             nms_boxes[cls_ind][im_ind] = dets[keep, :].copy()
+#     return nms_boxes
 
 
 def test_net(sess, net, imdb, weights_filename, max_per_image=300, thresh=0.05, vis=False):

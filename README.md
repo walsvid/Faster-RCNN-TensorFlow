@@ -1,12 +1,15 @@
 # Faster-RCNN-TensorFlow
+[![Language python](https://img.shields.io/badge/python-3.5%2C%203.6-blue.svg)](https://www.python.org) [![TensorFlow](https://img.shields.io/badge/tensorflow-1.3-orange.svg)](https://www.tensorflow.org) [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://opensource.org/licenses/MIT) 
+
 This is an experimental TensorFlow implementation of Faster-RCNN, based on the work of [smallcorgi](https://github.com/smallcorgi/Faster-RCNN_TF) and [rbgirshick](https://github.com/rbgirshick/py-faster-rcnn). I have converted the code to python3, future python2 will stop supporting it, and using python3 is an irreversible trend. And I deleted some useless files and legacy caffe code.
 
 What's New:
 - [x] Convert code to Python3
 - [x] Make compile script adapt gcc-5
 - [x] Visualization using tensorboard
+- [x] PSRoI Pooling
 - [ ] OHEM a.k.a Online Hard Example Miniing
-- [ ] ROI Align
+- [ ] RoI Align
 - [ ] More basenet
 
 Reference:
