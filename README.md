@@ -93,11 +93,11 @@ The demo performs detection using a VGG16 network trained for detection on PASCA
     cd $FRCN_ROOT/data
     ln -s $VOCdevkit VOCdevkit2007
     ```
-    
+
 5. Download pre-trained ImageNet models
 
-   Download the pre-trained ImageNet models [[Google Drive]](https://drive.google.com/file/d/0ByuDEGFYmWsbNVF5eExySUtMZmM/view?usp=sharing)
-   
+    Download the pre-trained ImageNet models [[Google Drive]](https://drive.google.com/file/d/0ByuDEGFYmWsbNVF5eExySUtMZmM/view?usp=sharing)
+
     ```bash
     mv VGG_imagenet.npy $FRCN_ROOT/data/pretrain_model/VGG_imagenet.npy
     ```
@@ -107,7 +107,9 @@ The demo performs detection using a VGG16 network trained for detection on PASCA
     cd $FRCN_ROOT
     ./experiments/scripts/faster_rcnn_end2end.sh $DEVICE $DEVICE_ID VGG16 pascal_voc
     ```
-  DEVICE is `cpu` or `gpu`
+    DEVICE is `cpu` or `gpu`.
+    Please note that if `CUDA_VISIBLE_DEVICES` is used as the mask for the specified GPU, please note the GPU ID. If it is an example like this: `CUDA_VISIBLE_DEVICES=1 ./experiments/scripts/faster_rcnn_end2end.sh gpu 1 VGG16 pascal_voc`, which means that the GPU1 is used as the starting number 1+1 or GPU2. If there are not multiple GPUs, use GPU0. Another example: use `CUDA_VISIBLE_DEVICES=1 ./experiments/scripts/faster_rcnn_end2end.sh gpu 0 VGG16 pascal_voc` so that although the displayed gpu id is 0, actually used is 1+0=GPU1.
+
 
 ### Visualization
 Just execute `tensorboard`.
@@ -116,4 +118,4 @@ tensorboard --logdir=./logs
 ```
 
 Release:
-`v0.3.0`
+`v0.4.0`
