@@ -50,19 +50,11 @@ time python ./tools/train_net.py --device ${DEV} --device_id ${DEV_ID} \
   --network VGGnet_train \
   ${EXTRA_ARGS}
 
-#time python ./tools/train_net.py --device ${DEV} --device_id ${DEV_ID} \
-#  --weights data/pretrain_model/VGG_imagenet.npy \
-#  --imdb ${TRAIN_IMDB} \
-#  --iters ${ITERS} \
-#  --cfg experiments/cfgs/faster_rcnn_end2end.yml \
-#  --network VGGnet_train \
-#  ${EXTRA_ARGS}
-
 set +x
 NET_FINAL=`grep -B 1 "done solving" ${LOG} | grep "Wrote snapshot" | awk '{print $4}'`
 set -x
 
-time python -m pdb ./tools/test_net.py --device ${DEV} --device_id ${DEV_ID} \
+time python ./tools/test_net.py --device ${DEV} --device_id ${DEV_ID} \
   --weights ${NET_FINAL} \
   --imdb ${TEST_IMDB} \
   --cfg experiments/cfgs/faster_rcnn_end2end.yml \
