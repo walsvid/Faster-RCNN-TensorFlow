@@ -2,11 +2,11 @@ import functools
 import numpy as np
 import tensorflow as tf
 import roi_pooling_layer.roi_pooling_op as roi_pool_op
+import psroi_pooling_layer.psroi_pooling_op as psroi_pooling_op
 import roi_pooling_layer.roi_pooling_op_grad
 from rpn.proposal_layer import proposal_layer as proposal_layer_py
 from rpn.anchor_target_layer import anchor_target_layer as anchor_target_layer_py
 from rpn.proposal_target_layer import proposal_target_layer as proposal_target_layer_py
-
 
 
 DEFAULT_PADDING = 'SAME'
@@ -36,11 +36,10 @@ def layer(op):
 
 
 class Network(object):
-    def __init__(self, trainable=True):
+    def __init__(self, is_train=True):
         self.inputs = []
         self.layers = dict()
-        self.trainable = trainable
-        self.setup()
+        self.is_train = is_train
 
     def setup(self):
         raise NotImplementedError('Must be subclassed.')
@@ -130,119 +129,128 @@ class Network(object):
 
     @layer
     def max_pool(self, inputs, k_h, k_w, s_h, s_w, name, padding=DEFAULT_PADDING):
-        self.validate_padding(padding)
-        return tf.nn.max_pool(inputs,
-                              ksize=[1, k_h, k_w, 1],
-                              strides=[1, s_h, s_w, 1],
-                              padding=padding,
-                              name=name)
+        with tf.name_scope(name):
+            self.validate_padding(padding)
+            return tf.nn.max_pool(inputs,
+                                  ksize=[1, k_h, k_w, 1],
+                                  strides=[1, s_h, s_w, 1],
+                                  padding=padding,
+                                  name=name)
 
     @layer
     def avg_pool(self, inputs, k_h, k_w, s_h, s_w, name, padding=DEFAULT_PADDING):
-        self.validate_padding(padding)
-        return tf.nn.avg_pool(inputs,
-                              ksize=[1, k_h, k_w, 1],
-                              strides=[1, s_h, s_w, 1],
-                              padding=padding,
-                              name=name)
+        with tf.name_scope(name):
+            self.validate_padding(padding)
+            return tf.nn.avg_pool(inputs,
+                                  ksize=[1, k_h, k_w, 1],
+                                  strides=[1, s_h, s_w, 1],
+                                  padding=padding,
+                                  name=name)
 
     @layer
     def roi_pool(self, inputs, pooled_height, pooled_width, spatial_scale, name):
-        # only use the first input
-        if isinstance(inputs[0], tuple):
-            inputs[0] = inputs[0][0]
+        with tf.name_scope(name):
+            # only use the first input
+            if isinstance(inputs[0], tuple):
+                inputs[0] = inputs[0][0]
 
-        if isinstance(inputs[1], tuple):
-            inputs[1] = inputs[1][0]
+            if isinstance(inputs[1], tuple):
+                inputs[1] = inputs[1][0]
 
-        print(inputs)
-        return roi_pool_op.roi_pool(inputs[0], inputs[1],
-                                    pooled_height,
-                                    pooled_width,
-                                    spatial_scale,
-                                    name=name)[0]
+            print(inputs)
+            return roi_pool_op.roi_pool(inputs[0], inputs[1],
+                                        pooled_height,
+                                        pooled_width,
+                                        spatial_scale,
+                                        name=name)[0]
+
+    @layer
+    def psroi_pool(self, inputs, output_dim, group_size, spatial_scale, name):
+        with tf.name_scope(name):
+            # only use the first input
+            if isinstance(inputs[0], tuple):
+                inputs[0] = inputs[0][0]
+
+            if isinstance(inputs[1], tuple):
+                inputs[1] = inputs[1][0]
+
+            return psroi_pooling_op.psroi_pool(inputs[0], inputs[1],
+                                               output_dim=output_dim,
+                                               group_size=group_size,
+                                               spatial_scale=spatial_scale,
+                                               name=name)[0]
 
     @layer
     def proposal_layer(self, inputs, _feat_stride, anchor_scales, cfg_key, name):
-        if isinstance(inputs[0], tuple):
-            inputs[0] = inputs[0][0]
-        return tf.reshape(
-            tf.py_func(proposal_layer_py, [inputs[0], inputs[1], inputs[2], cfg_key, _feat_stride, anchor_scales],
-                       [tf.float32]), [-1, 5], name=name)
+        with tf.name_scope(name):
+            if isinstance(inputs[0], tuple):
+                inputs[0] = inputs[0][0]
+            return tf.reshape(
+                tf.py_func(proposal_layer_py, [inputs[0], inputs[1], inputs[2], cfg_key, _feat_stride, anchor_scales],
+                           [tf.float32]), [-1, 5], name=name)
 
     @layer
     def anchor_target_layer(self, inputs, _feat_stride, anchor_scales, name):
-        if isinstance(inputs[0], tuple):
-            inputs[0] = inputs[0][0]
+        with tf.name_scope(name):
+            if isinstance(inputs[0], tuple):
+                inputs[0] = inputs[0][0]
 
-        with tf.variable_scope(name) as scope:
-            rpn_labels, rpn_bbox_targets, rpn_bbox_inside_weights, rpn_bbox_outside_weights \
-                = tf.py_func(anchor_target_layer_py,
-                             [inputs[0], inputs[1], inputs[2], inputs[3], _feat_stride, anchor_scales],
-                             [tf.float32, tf.float32, tf.float32, tf.float32])
+            with tf.variable_scope(name) as scope:
+                rpn_labels, rpn_bbox_targets, rpn_bbox_inside_weights, rpn_bbox_outside_weights \
+                    = tf.py_func(anchor_target_layer_py,
+                                 [inputs[0], inputs[1], inputs[2], inputs[3], _feat_stride, anchor_scales],
+                                 [tf.float32, tf.float32, tf.float32, tf.float32])
 
-            rpn_labels = tf.convert_to_tensor(tf.cast(rpn_labels, tf.int32), name='rpn_labels')
-            rpn_bbox_targets = tf.convert_to_tensor(rpn_bbox_targets, name='rpn_bbox_targets')
-            rpn_bbox_inside_weights = tf.convert_to_tensor(rpn_bbox_inside_weights, name='rpn_bbox_inside_weights')
-            rpn_bbox_outside_weights = tf.convert_to_tensor(rpn_bbox_outside_weights, name='rpn_bbox_outside_weights')
+                rpn_labels = tf.convert_to_tensor(tf.cast(rpn_labels, tf.int32), name='rpn_labels')
+                rpn_bbox_targets = tf.convert_to_tensor(rpn_bbox_targets, name='rpn_bbox_targets')
+                rpn_bbox_inside_weights = tf.convert_to_tensor(rpn_bbox_inside_weights, name='rpn_bbox_inside_weights')
+                rpn_bbox_outside_weights = tf.convert_to_tensor(rpn_bbox_outside_weights, name='rpn_bbox_outside_weights')
 
-            return rpn_labels, rpn_bbox_targets, rpn_bbox_inside_weights, rpn_bbox_outside_weights
+                return rpn_labels, rpn_bbox_targets, rpn_bbox_inside_weights, rpn_bbox_outside_weights
 
     @layer
     def proposal_target_layer(self, inputs, classes, name):
-        if isinstance(inputs[0], tuple):
-            inputs[0] = inputs[0][0]
-        with tf.variable_scope(name) as scope:
-            rois, labels, bbox_targets, bbox_inside_weights, bbox_outside_weights \
-                = tf.py_func(proposal_target_layer_py,
-                             [inputs[0], inputs[1], classes],
-                             [tf.float32, tf.float32, tf.float32, tf.float32, tf.float32])
+        with tf.name_scope(name):
+            if isinstance(inputs[0], tuple):
+                inputs[0] = inputs[0][0]
+            with tf.variable_scope(name) as scope:
+                rois, labels, bbox_targets, bbox_inside_weights, bbox_outside_weights \
+                    = tf.py_func(proposal_target_layer_py,
+                                 [inputs[0], inputs[1], classes],
+                                 [tf.float32, tf.float32, tf.float32, tf.float32, tf.float32])
 
-            rois = tf.reshape(rois, [-1, 5], name='rois')
-            labels = tf.convert_to_tensor(tf.cast(labels, tf.int32), name='labels')
-            bbox_targets = tf.convert_to_tensor(bbox_targets, name='bbox_targets')
-            bbox_inside_weights = tf.convert_to_tensor(bbox_inside_weights, name='bbox_inside_weights')
-            bbox_outside_weights = tf.convert_to_tensor(bbox_outside_weights, name='bbox_outside_weights')
+                rois = tf.reshape(rois, [-1, 5], name='rois')
+                labels = tf.convert_to_tensor(tf.cast(labels, tf.int32), name='labels')
+                bbox_targets = tf.convert_to_tensor(bbox_targets, name='bbox_targets')
+                bbox_inside_weights = tf.convert_to_tensor(bbox_inside_weights, name='bbox_inside_weights')
+                bbox_outside_weights = tf.convert_to_tensor(bbox_outside_weights, name='bbox_outside_weights')
 
-            return rois, labels, bbox_targets, bbox_inside_weights, bbox_outside_weights
+                return rois, labels, bbox_targets, bbox_inside_weights, bbox_outside_weights
 
     @layer
     # TODO: need re-write reshape layer
     def reshape_layer(self, inputs, d, name):
-        input_shape = tf.shape(inputs)
-        if name == 'rpn_cls_prob_reshape':
-            return tf.transpose(tf.reshape(tf.transpose(inputs, [0, 3, 1, 2]), [input_shape[0],
-                                                                                int(d), tf.cast(
-                    tf.cast(input_shape[1], tf.float32) / tf.cast(d, tf.float32) * tf.cast(input_shape[3], tf.float32),
-                    tf.int32), input_shape[2]]), [0, 2, 3, 1], name=name)
-        else:
-            return tf.transpose(tf.reshape(tf.transpose(inputs, [0, 3, 1, 2]), [input_shape[0],
-                                                                                int(d), tf.cast(
-                    tf.cast(input_shape[1], tf.float32) * (
-                            tf.cast(input_shape[3], tf.float32) / tf.cast(d, tf.float32)), tf.int32),
-                                                                                input_shape[2]]), [0, 2, 3, 1],
-                                name=name)
-
-    # @layer
-    # def feature_extrapolating(self, input, scales_base, num_scale_base, num_per_octave, name):
-    #     return feature_extrapolating_op.feature_extrapolating(input,
-    #                           scales_base,
-    #                           num_scale_base,
-    #                           num_per_octave,
-    #                           name=name)
+        with tf.name_scope(name):
+            input_shape = tf.shape(inputs)
+            if name == 'rpn_cls_prob_reshape':
+                return tf.transpose(tf.reshape(tf.transpose(inputs, [0, 3, 1, 2]), [input_shape[0], int(d), tf.cast(tf.cast(input_shape[1], tf.float32) / tf.cast(d, tf.float32) * tf.cast(input_shape[3], tf.float32), tf.int32), input_shape[2]]), [0, 2, 3, 1], name=name)
+            else:
+                return tf.transpose(tf.reshape(tf.transpose(inputs, [0, 3, 1, 2]), [input_shape[0], int(d), tf.cast(tf.cast(input_shape[1], tf.float32) * (tf.cast(input_shape[3], tf.float32) / tf.cast(d, tf.float32)), tf.int32), input_shape[2]]), [0, 2, 3, 1], name=name)
 
     @layer
-    def lrn(self, input, radius, alpha, beta, name, bias=1.0):
-        return tf.nn.local_response_normalization(input,
-                                                  depth_radius=radius,
-                                                  alpha=alpha,
-                                                  beta=beta,
-                                                  bias=bias,
-                                                  name=name)
+    def lrn(self, inputs, radius, alpha, beta, name, bias=1.0):
+        with tf.name_scope(name):
+            return tf.nn.local_response_normalization(inputs,
+                                                      depth_radius=radius,
+                                                      alpha=alpha,
+                                                      beta=beta,
+                                                      bias=bias,
+                                                      name=name)
 
     @layer
     def concat(self, inputs, axis, name):
-        return tf.concat(axis=axis, values=inputs, name=name)
+        with tf.name_scope(name):
+            return tf.concat(axis=axis, values=inputs, name=name)
 
     @layer
     def fc(self, inputs, num_out, name, relu=True, trainable=True):
