@@ -16,8 +16,11 @@ from datasets.factory import get_imdb
 from networks.factory import get_network
 import argparse
 import pprint
-import time, os, sys
+import time
+import os
+import sys
 import tensorflow as tf
+
 
 def parse_args():
     """
@@ -52,8 +55,9 @@ def parse_args():
         parser.print_help()
         sys.exit(1)
 
-    args = parser.parse_args()
-    return args
+    args_ = parser.parse_args()
+    return args_
+
 
 if __name__ == '__main__':
     args = parse_args()
@@ -67,21 +71,21 @@ if __name__ == '__main__':
     print('Using config:')
     pprint.pprint(cfg)
 
-    # if cfg.TEST.CHECKPOINTS_PATH is '':
-    #     ckpt_path = os.path.dirname(args.model)
-    # else:
-    #     ckpt_path = cfg.TEST.CHECKPOINTS_PATH
+    if cfg.TEST.CHECKPOINTS_PATH is '':
+        ckpt_path = os.path.dirname(args.model)
+    else:
+        ckpt_path = cfg.TEST.CHECKPOINTS_PATH
 
-    while not os.path.exists(args.model) and args.wait:
-        print('Waiting for {} to exist...'.format(args.model))
+    while not os.path.exists(ckpt_path) and args.wait:
+        print('Waiting for {} to exist...'.format(ckpt_path))
         time.sleep(10)
 
-    weights_filename = os.path.splitext(os.path.basename(args.model))[0]
+    weights_filename = os.path.splitext(os.path.basename(ckpt_path))[0]
 
     imdb = get_imdb(args.imdb_name)
     imdb.competition_mode(args.comp_mode)
 
-    device_name = '/{}:{:d}'.format(args.device,args.device_id)
+    device_name = '/{}:{:d}'.format(args.device, args.device_id)
     print(device_name)
 
     network = get_network(args.network_name)
@@ -97,15 +101,14 @@ if __name__ == '__main__':
     saver = tf.train.Saver()
     sess = tf.Session(config=tf.ConfigProto(allow_soft_placement=True))
 
-    ckpt_path = os.path.dirname(args.model)
     print(ckpt_path)
     try:
         ckpt = tf.train.get_checkpoint_state(ckpt_path)
         print('Restoring from {}...'.format(ckpt.model_checkpoint_path), end=' ')
         saver.restore(sess, ckpt.model_checkpoint_path)
         print('done')
-    except :
-        raise 'Check your pretrained {:s}'.format(ckpt.model_checkpoint_path)
+    except FileNotFoundError:
+        raise 'Check your pretrained {:s}'.format(ckpt_path)
 
     # saver.restore(sess, args.model)
     # print('Loading model weights from {:s}'.format(args.model))
