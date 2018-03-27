@@ -284,13 +284,15 @@ class Network(object):
 
     @layer
     def softmax(self, inputs, name):
-        input_shape = tf.shape(inputs)
-        if name == 'rpn_cls_prob':
-            return tf.reshape(tf.nn.softmax(tf.reshape(inputs, [-1, input_shape[3]])),
-                              [-1, input_shape[1], input_shape[2], input_shape[3]], name=name)
-        else:
-            return tf.nn.softmax(inputs, name=name)
+        with tf.name_scope(name):
+            input_shape = tf.shape(inputs)
+            if name == 'rpn_cls_prob':
+                return tf.reshape(tf.nn.softmax(tf.reshape(inputs, [-1, input_shape[3]])),
+                                  [-1, input_shape[1], input_shape[2], input_shape[3]], name=name)
+            else:
+                return tf.nn.softmax(inputs, name=name)
 
     @layer
     def dropout(self, inputs, keep_prob, name):
-        return tf.nn.dropout(inputs, keep_prob, name=name)
+        with tf.name_scope(name):
+            return tf.nn.dropout(inputs, keep_prob, name=name)
