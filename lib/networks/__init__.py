@@ -6,4 +6,5 @@
 # --------------------------------------------------------
 
 from .VGG16 import VGG16
+from .Resnet50 import Resnet50
 from . import factory

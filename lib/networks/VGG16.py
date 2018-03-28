@@ -18,22 +18,6 @@ class VGG16(Network):
         self.keep_prob = tf.placeholder(tf.float32)
         self.layers = dict({'data': self.data, 'im_info': self.im_info, 'gt_boxes': self.gt_boxes})
 
-        self.bbox_weights, self.bbox_biases = None, None
-        self.bbox_weights_assign, self.bbox_bias_assign = None, None
-
-    def bbox_normalization(self):
-        # create ops and placeholders for bbox normalization process
-        if self.is_train:
-            with tf.variable_scope('bbox_pred', reuse=True):
-                weights = tf.get_variable("weights")
-                biases = tf.get_variable("biases")
-
-                self.bbox_weights = tf.placeholder(weights.dtype, shape=weights.get_shape())
-                self.bbox_biases = tf.placeholder(biases.dtype, shape=biases.get_shape())
-
-                self.bbox_weights_assign = weights.assign(self.bbox_weights)
-                self.bbox_bias_assign = biases.assign(self.bbox_biases)
-
     def setup(self):
         # ========= HeadNet ============
         (self.feed('data')
@@ -74,15 +58,13 @@ class VGG16(Network):
 
         (self.feed('rpn_cls_prob')
          .reshape_layer(len(self.anchor_scales) * 3 * 2, name='rpn_cls_prob_reshape'))
-        if self.is_train:
-            (self.feed('rpn_cls_prob_reshape', 'rpn_bbox_pred', 'im_info')
-             .proposal_layer(self.feat_stride, self.anchor_scales, 'TRAIN', name='rpn_rois'))
 
+        (self.feed('rpn_cls_prob_reshape', 'rpn_bbox_pred', 'im_info')
+         .proposal_layer(self.feat_stride, self.anchor_scales, self.mode, name='rpn_rois'))
+
+        if self.is_train:
             (self.feed('rpn_rois', 'gt_boxes')
              .proposal_target_layer(self.n_classes, name='roi-data'))
-        else:
-            (self.feed('rpn_cls_prob_reshape', 'rpn_bbox_pred', 'im_info')
-             .proposal_layer(self.feat_stride, self.anchor_scales, 'TEST', name='rois'))
 
         # ========= RCNN ============
         if self.is_train:
@@ -99,7 +81,7 @@ class VGG16(Network):
              .fc(self.n_classes * 4, relu=False, name='bbox_pred'))
             self.bbox_normalization()
         else:
-            (self.feed('conv5_3', 'rois')
+            (self.feed('conv5_3', 'rpn_rois')
              .roi_pool(7, 7, 1.0 / 16, name='pool_5')
              .fc(4096, name='fc6')
              .fc(4096, name='fc7')
