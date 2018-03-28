@@ -11,7 +11,7 @@ What's New:
 - [x] PSRoI Pooling
 - [ ] OHEM a.k.a Online Hard Example Miniing
 - [ ] RoI Align
-- [ ] More basenet
+- [x] More basenet
 
 Reference:
 ### Acknowledgments: 
@@ -147,4 +147,4 @@ tensorboard --logdir=./logs
 
 
 Release:
-`v0.4.0`
+`v0.5.0`
