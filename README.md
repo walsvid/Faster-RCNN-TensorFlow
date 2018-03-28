@@ -1,5 +1,6 @@
 # Faster-RCNN-TensorFlow
-[![Language python](https://img.shields.io/badge/python-3.5%2C%203.6-blue.svg)](https://www.python.org) [![TensorFlow](https://img.shields.io/badge/tensorflow-1.3-orange.svg)](https://www.tensorflow.org) [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://opensource.org/licenses/MIT) 
+[![Language python](https://img.shields.io/badge/python-3.5%2C%203.6-blue.svg)](https://www.python.org) [![TensorFlow](https://img.shields.io/badge/tensorflow-1.3-orange.svg)](https://www.tensorflow.org) [![License](https://img.shields.io/badge/license-MIT-000000.svg)](https://opensource.org/licenses/MIT) 
+
 
 This is an experimental TensorFlow implementation of Faster-RCNN, based on the work of [smallcorgi](https://github.com/smallcorgi/Faster-RCNN_TF) and [rbgirshick](https://github.com/rbgirshick/py-faster-rcnn). I have converted the code to python3, future python2 will stop supporting it, and using python3 is an irreversible trend. And I deleted some useless files and legacy caffe code.
 
@@ -10,7 +11,7 @@ What's New:
 - [x] PSRoI Pooling
 - [ ] OHEM a.k.a Online Hard Example Miniing
 - [ ] RoI Align
-- [ ] More basenet
+- [x] More basenet
 
 Reference:
 ### Acknowledgments: 
@@ -117,5 +118,33 @@ Just execute `tensorboard`.
 tensorboard --logdir=./logs
 ```
 
+### The result of testing on PASCAL VOC 2007 
+
+#### VGG16
+| Classes     | AP     |
+|:-----------:|:------:|
+| aeroplane   | 0.7391 |
+| bicycle     | 0.7803 |
+| bird        | 0.6681 |
+| boat        | 0.5576 |
+| bottle      | 0.5236 |
+| bus         | 0.7661 |
+| car         | 0.8000 |
+| cat         | 0.7840 |
+| chair       | 0.4995 |
+| cow         | 0.7252 |
+| diningtable | 0.6721 |
+| dog         | 0.7504 |
+| horse       | 0.7843 |
+| motorbike   | 0.7410 |
+| person      | 0.7739 |
+| pottedplant | 0.4401 |
+| sheep       | 0.6616 |
+| sofa        | 0.6519 |
+| train       | 0.7431 |
+| tvmonitor   | 0.7106 |
+| **mAP**     | 0.6886 |
+
+
 Release:
-`v0.4.0`
+`v0.5.0`

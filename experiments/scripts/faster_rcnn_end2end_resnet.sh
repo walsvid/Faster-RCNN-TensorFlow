@@ -1,5 +1,4 @@
-#!/bin/bash
-
+#!/usr/bin/env bash
 
 set -x
 set -e
@@ -21,7 +20,7 @@ case $DATASET in
     TRAIN_IMDB="voc_2007_trainval"
     TEST_IMDB="voc_2007_test"
     PT_DIR="pascal_voc"
-    ITERS=70000
+    ITERS=160000
     ;;
   coco)
     # This is a very long and slow training schedule
@@ -43,11 +42,11 @@ exec &> >(tee -a "$LOG")
 echo Logging output to "$LOG"
 
 time python ./tools/train_net.py --device ${DEV} --device_id ${DEV_ID} \
-  --weights data/pretrain_model/VGG_imagenet.npy \
+  --weights data/pretrain_model/Resnet50.npy \
   --imdb ${TRAIN_IMDB} \
   --iters ${ITERS} \
-  --cfg experiments/cfgs/faster_rcnn_end2end.yml \
-  --network VGGnet_train \
+  --cfg experiments/cfgs/faster_rcnn_end2end_resnet.yml \
+  --network Resnet50_train \
   ${EXTRA_ARGS}
 
 set +x
@@ -57,6 +56,6 @@ set -x
 time python ./tools/test_net.py --device ${DEV} --device_id ${DEV_ID} \
   --weights ${NET_FINAL} \
   --imdb ${TEST_IMDB} \
-  --cfg experiments/cfgs/faster_rcnn_end2end.yml \
-  --network VGGnet_test \
+  --cfg experiments/cfgs/faster_rcnn_end2end_resnet.yml \
+  --network Resnet50_test \
   ${EXTRA_ARGS}
