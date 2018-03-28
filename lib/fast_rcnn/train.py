@@ -181,7 +181,7 @@ class SolverWrapper(object):
 
             timer.tic()
 
-            rpn_loss_cls_value, rpn_loss_box_value,loss_cls_value,loss_box_value, \
+            rpn_loss_cls_value, rpn_loss_box_value, loss_cls_value, loss_box_value, \
                 summary_str, _ = sess.run([rpn_cross_entropy, rpn_loss_box, cross_entropy, loss_box, summary_op, train_op],
                                           feed_dict=feed_dict, options=run_options, run_metadata=run_metadata)
 
@@ -258,7 +258,7 @@ def filter_roidb(roidb):
 def train_net(network, imdb, roidb, output_dir, log_dir, pretrained_model=None, max_iters=40000):
     """Train a Fast R-CNN network."""
     roidb = filter_roidb(roidb)
-    saver = tf.train.Saver(max_to_keep=100)
+    saver = tf.train.Saver()
     with tf.Session(config=tf.ConfigProto(allow_soft_placement=True)) as sess:
         sw = SolverWrapper(sess, saver, network, imdb, roidb, output_dir, log_dir, pretrained_model=pretrained_model)
         print('Solving...')
