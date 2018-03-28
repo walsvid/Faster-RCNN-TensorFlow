@@ -29,12 +29,16 @@ __C = edict()
 #   from fast_rcnn_config import cfg
 cfg = __C
 
+# region proposal network (RPN) or not
+__C.IS_RPN = True
+__C.ANCHOR_SCALES = [8, 16, 32]
+__C.NCLASSES = 21
 #
 # Training options
 #
 
 __C.TRAIN = edict()
-#__C.NET_NAME = 'VGGnet'
+__C.NET_NAME = 'VGGnet'
 # learning rate
 __C.TRAIN.LEARNING_RATE = 0.001
 __C.TRAIN.MOMENTUM = 0.9
@@ -149,6 +153,9 @@ __C.TRAIN.RPN_POSITIVE_WEIGHT = -1.0
 
 # Enable timeline generation
 __C.TRAIN.DEBUG_TIMELINE = False
+
+# Weight decay
+__C.TRAIN.WEIGHT_DECAY = 0.0005
 
 #
 # Testing options
