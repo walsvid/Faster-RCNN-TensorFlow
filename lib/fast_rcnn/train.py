@@ -8,14 +8,12 @@
 """Train a Fast R-CNN network."""
 
 from fast_rcnn.config import cfg
-# import gt_data_layer.roidb as gdl_roidb
 import roi_data_layer.roidb as rdl_roidb
 from roi_data_layer.layer import RoIDataLayer
 from utils.timer import Timer
 import numpy as np
 import os
 import tensorflow as tf
-import sys
 from tensorflow.python.client import timeline
 import time
 
@@ -42,7 +40,6 @@ class SolverWrapper(object):
         # For checkpoint
         self.saver = saver
         # Log summary writer
-        self.summary = []
         self.writer = tf.summary.FileWriter(logdir=log_dir, graph=tf.get_default_graph(), flush_secs=5)
 
     def snapshot(self, sess, iter):
@@ -108,49 +105,8 @@ class SolverWrapper(object):
 
         data_layer = get_data_layer(self.roidb, self.imdb.num_classes)
 
-        # RPN
-        # classification loss
-        rpn_cls_score = tf.reshape(self.net.get_output('rpn_cls_score_reshape'),[-1,2])
-        rpn_label = tf.reshape(self.net.get_output('rpn-data')[0],[-1])
-        rpn_cls_score = tf.reshape(tf.gather(rpn_cls_score,tf.where(tf.not_equal(rpn_label,-1))),[-1,2])
-        rpn_label = tf.reshape(tf.gather(rpn_label,tf.where(tf.not_equal(rpn_label,-1))),[-1])
-        rpn_cross_entropy = tf.reduce_mean(tf.nn.sparse_softmax_cross_entropy_with_logits(logits=rpn_cls_score, labels=rpn_label))
-
-        # bounding box regression L1 loss
-        rpn_bbox_pred = self.net.get_output('rpn_bbox_pred')
-        rpn_bbox_targets = tf.transpose(self.net.get_output('rpn-data')[1],[0,2,3,1])
-        rpn_bbox_inside_weights = tf.transpose(self.net.get_output('rpn-data')[2],[0,2,3,1])
-        rpn_bbox_outside_weights = tf.transpose(self.net.get_output('rpn-data')[3],[0,2,3,1])
-
-        rpn_smooth_l1 = self._modified_smooth_l1(3.0, rpn_bbox_pred, rpn_bbox_targets, rpn_bbox_inside_weights, rpn_bbox_outside_weights)
-        rpn_loss_box = tf.reduce_mean(tf.reduce_sum(rpn_smooth_l1, reduction_indices=[1, 2, 3]))
-
-        # R-CNN
-        # classification loss
-        cls_score = self.net.get_output('cls_score')
-        label = tf.reshape(self.net.get_output('roi-data')[1],[-1])
-        cross_entropy = tf.reduce_mean(tf.nn.sparse_softmax_cross_entropy_with_logits(logits=cls_score, labels=label))
-
-        # bounding box regression L1 loss
-        bbox_pred = self.net.get_output('bbox_pred')
-        bbox_targets = self.net.get_output('roi-data')[2]
-        bbox_inside_weights = self.net.get_output('roi-data')[3]
-        bbox_outside_weights = self.net.get_output('roi-data')[4]
-
-        smooth_l1 = self._modified_smooth_l1(1.0, bbox_pred, bbox_targets, bbox_inside_weights, bbox_outside_weights)
-        loss_box = tf.reduce_mean(tf.reduce_sum(smooth_l1, reduction_indices=[1]))
-
-        # final loss
-        loss = cross_entropy + loss_box + rpn_cross_entropy + rpn_loss_box
-
-        # summary
-        # scalar summary
-        self.summary.append(tf.summary.scalar('rpn_reg_loss', rpn_loss_box))
-        self.summary.append(tf.summary.scalar('rpn_cls_loss', rpn_cross_entropy))
-        self.summary.append(tf.summary.scalar('loss_box', loss_box))
-        self.summary.append(tf.summary.scalar('loss_cls', cross_entropy))
-        self.summary.append(tf.summary.scalar('total_loss', loss))
-        summary_op = tf.summary.merge(self.summary)
+        loss, cross_entropy, loss_box, rpn_cross_entropy, rpn_loss_box = self.net.build_loss(ohem=False)
+        summary_op = self.net.summarizer()
 
         # optimizer and learning rate
         global_step = tf.Variable(0, trainable=False)
@@ -183,7 +139,7 @@ class SolverWrapper(object):
 
             timer.tic()
 
-            rpn_loss_cls_value, rpn_loss_box_value,loss_cls_value,loss_box_value, \
+            rpn_loss_cls_value, rpn_loss_box_value, loss_cls_value, loss_box_value, \
                 summary_str, _ = sess.run([rpn_cross_entropy, rpn_loss_box, cross_entropy, loss_box, summary_op, train_op],
                                           feed_dict=feed_dict, options=run_options, run_metadata=run_metadata)
 
@@ -260,7 +216,7 @@ def filter_roidb(roidb):
 def train_net(network, imdb, roidb, output_dir, log_dir, pretrained_model=None, max_iters=40000):
     """Train a Fast R-CNN network."""
     roidb = filter_roidb(roidb)
-    saver = tf.train.Saver(max_to_keep=100)
+    saver = tf.train.Saver()
     with tf.Session(config=tf.ConfigProto(allow_soft_placement=True)) as sess:
         sw = SolverWrapper(sess, saver, network, imdb, roidb, output_dir, log_dir, pretrained_model=pretrained_model)
         print('Solving...')

@@ -29,12 +29,16 @@ __C = edict()
 #   from fast_rcnn_config import cfg
 cfg = __C
 
+# region proposal network (RPN) or not
+__C.IS_RPN = True
+__C.ANCHOR_SCALES = [8, 16, 32]
+__C.NCLASSES = 21
 #
 # Training options
 #
 
 __C.TRAIN = edict()
-#__C.NET_NAME = 'VGGnet'
+__C.NET_NAME = 'VGGnet'
 # learning rate
 __C.TRAIN.LEARNING_RATE = 0.001
 __C.TRAIN.MOMENTUM = 0.9
@@ -150,6 +154,9 @@ __C.TRAIN.RPN_POSITIVE_WEIGHT = -1.0
 # Enable timeline generation
 __C.TRAIN.DEBUG_TIMELINE = False
 
+# Weight decay
+__C.TRAIN.WEIGHT_DECAY = 0.0005
+
 #
 # Testing options
 #
@@ -234,9 +241,6 @@ __C.MATLAB = 'matlab'
 # Place outputs under an experiments directory
 __C.EXP_DIR = 'default'
 
-# Place logs under an experiments directory
-__C.LOG_DIR = 'default'
-
 
 if spawn.find_executable("nvcc"):
     # Use GPU implementation of non-maximum suppression
@@ -262,16 +266,18 @@ def get_output_dir(imdb, weights_filename):
         os.makedirs(outdir)
     return outdir
 
+
 def get_log_dir(imdb):
     """Return the directory where experimental artifacts are placed.
     If the directory does not exist, it is created.
     A canonical path is built using the name from an imdb and a network
     (if not None).
     """
-    log_dir = osp.abspath(osp.join(__C.ROOT_DIR, 'logs', __C.LOG_DIR, imdb.name, strftime("%Y-%m-%d-%H-%M-%S", localtime())))
+    log_dir = osp.abspath(osp.join(__C.ROOT_DIR, 'logs', __C.EXP_DIR, imdb.name, strftime("%Y-%m-%d-%H-%M-%S", localtime())))
     if not os.path.exists(log_dir):
         os.makedirs(log_dir)
     return log_dir
+
 
 def _merge_a_into_b(a, b):
     """Merge config dictionary a into config dictionary b, clobbering the
@@ -291,9 +297,7 @@ def _merge_a_into_b(a, b):
             if isinstance(b[k], np.ndarray):
                 v = np.array(v, dtype=b[k].dtype)
             else:
-                raise ValueError('Type mismatch ({} vs. {}) '
-                                'for config key: {}').format(type(b[k]),
-                                                            type(v), k)
+                raise ValueError('Type mismatch ({} vs. {}) for config key: {}'.format(type(b[k]), type(v), k))
 
         # recursively merge dicts
         if type(v) is edict:
@@ -305,6 +309,7 @@ def _merge_a_into_b(a, b):
         else:
             b[k] = v
 
+
 def cfg_from_file(filename):
     """Load a config file and merge it into the default options."""
     import yaml
@@ -312,6 +317,7 @@ def cfg_from_file(filename):
         yaml_cfg = edict(yaml.load(f))
 
     _merge_a_into_b(yaml_cfg, __C)
+
 
 def cfg_from_list(cfg_list):
     """Set config keys via list (e.g., from command line)."""
