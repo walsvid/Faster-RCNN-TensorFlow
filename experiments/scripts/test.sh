@@ -40,12 +40,12 @@ esac
 
 
 set +x
-NET_FINAL="./output/faster_rcnn_end2end/voc_2007_trainval/VGGnet_fast_rcnn_iter_5000.ckpt.meta"
+NET_FINAL="./output/faster_rcnn_end2end_resnet50/voc_2007_trainval/Resnet50_fast_rcnn_iter_160000.ckpt.meta"
 set -x
 
 time python ./tools/test_net.py --device ${DEV} --device_id ${DEV_ID} \
   --weights ${NET_FINAL} \
   --imdb ${TEST_IMDB} \
-  --cfg experiments/cfgs/faster_rcnn_end2end.yml \
-  --network VGGnet_test \
+  --cfg experiments/cfgs/faster_rcnn_end2end_resnet.yml \
+  --network Resnet50_test \
   ${EXTRA_ARGS}
