@@ -26,7 +26,6 @@ def _register():
 def get_network(name):
     """Get a network by name."""
     _register()
-    print("!!!!!!!!!!!!!!!!!!!!!!!!")
     if name not in __sets:
         raise KeyError('Unknown dataset: {}'.format(name))
     net = __sets[name].setup()

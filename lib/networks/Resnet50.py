@@ -203,13 +203,13 @@ class Resnet50(Network):
          .spatial_reshape_layer(len(self.anchor_scales) * 3 * 2, name='rpn_cls_prob_reshape'))
 
         (self.feed('rpn_cls_prob_reshape', 'rpn_bbox_pred', 'im_info')
-         .proposal_layer(self.feat_stride, self.anchor_scales, self.mode, name='rpn_rois'))
+         .proposal_layer(self.feat_stride, self.anchor_scales, self.mode, name=self.proposal_layer_name))
 
         if self.is_train:
             (self.feed('rpn_rois', 'gt_boxes')
              .proposal_target_layer(self.n_classes, name='roi-data'))
 
-        feed_layer = 'roi-data' if self.is_train else 'roi-data'
+        feed_layer = 'roi-data' if self.is_train else 'rois'
         # ========= RCNN ============
         (self.feed('res4f_relu', feed_layer)
          .roi_pool(7, 7, 1.0 / 16, name='res5a_branch2a_roipooling')
@@ -233,7 +233,6 @@ class Resnet50(Network):
          .batch_normalization(relu=True, name='bn5b_branch2b', is_training=False)
          .conv(1, 1, 2048, 1, 1, biased=False, relu=False, name='res5b_branch2c')
          .batch_normalization(name='bn5b_branch2c', is_training=False, relu=False))
-        # pdb.set_trace()
         (self.feed('res5a_relu',
                    'bn5b_branch2c')
          .add(name='res5b')
@@ -244,7 +243,6 @@ class Resnet50(Network):
          .batch_normalization(relu=True, name='bn5c_branch2b', is_training=False)
          .conv(1, 1, 2048, 1, 1, biased=False, relu=False, name='res5c_branch2c')
          .batch_normalization(name='bn5c_branch2c', is_training=False, relu=False))
-        # pdb.set_trace()
         (self.feed('res5b_relu',
                    'bn5c_branch2c')
          .add(name='res5c')

@@ -60,7 +60,7 @@ class VGG16(Network):
          .reshape_layer(len(self.anchor_scales) * 3 * 2, name='rpn_cls_prob_reshape'))
 
         (self.feed('rpn_cls_prob_reshape', 'rpn_bbox_pred', 'im_info')
-         .proposal_layer(self.feat_stride, self.anchor_scales, self.mode, name='rpn_rois'))
+         .proposal_layer(self.feat_stride, self.anchor_scales, self.mode, name=self.proposal_layer_name))
 
         if self.is_train:
             (self.feed('rpn_rois', 'gt_boxes')
