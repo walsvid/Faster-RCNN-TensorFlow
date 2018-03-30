@@ -90,12 +90,26 @@ class SolverWrapper(object):
 
         # optimizer and learning rate
         global_step = tf.Variable(0, trainable=False)
-        lr = tf.train.exponential_decay(cfg.TRAIN.LEARNING_RATE, global_step,
-                                        cfg.TRAIN.STEPSIZE, 0.1, staircase=True)
-        momentum = cfg.TRAIN.MOMENTUM
-        train_op = tf.train.MomentumOptimizer(lr, momentum).minimize(loss, global_step=global_step)
 
-        # iintialize variables
+        # optimizer
+        if cfg.TRAIN.SOLVER == 'Adam':
+            opt = tf.train.AdamOptimizer(cfg.TRAIN.LEARNING_RATE)
+        elif cfg.TRAIN.SOLVER == 'RMS':
+            opt = tf.train.RMSPropOptimizer(cfg.TRAIN.LEARNING_RATE)
+        else:
+            momentum_lr = tf.train.exponential_decay(cfg.TRAIN.LEARNING_RATE, global_step,
+                                                 cfg.TRAIN.STEPSIZE, 0.1, staircase=True)
+            momentum = cfg.TRAIN.MOMENTUM
+            opt = tf.train.MomentumOptimizer(momentum_lr, momentum)
+
+        if cfg.TRAIN.WITH_CLIP:
+            tvars = tf.trainable_variables()
+            grads, norm = tf.clip_by_global_norm(tf.gradients(loss, tvars), 10.0)
+            train_op = opt.apply_gradients(zip(grads, tvars), global_step=global_step)
+        else:
+            train_op = opt.minimize(loss, global_step=global_step)
+
+        # initialize variables
         sess.run(tf.global_variables_initializer())
         if self.pretrained_model is not None:
             print('Loading pretrained model weights from {:s}'.format(self.pretrained_model))
@@ -104,6 +118,11 @@ class SolverWrapper(object):
         last_snapshot_iter = -1
         timer = Timer()
         for iter in range(max_iters):
+            # learning rate
+            if iter != 0 and iter % cfg.TRAIN.STEPSIZE == 0:
+                sess.run(tf.assign(momentum_lr, momentum_lr.eval() * cfg.TRAIN.GAMMA))
+                # sess.run(tf.assign(lr, 0.0))
+
             # get one batch
             blobs = data_layer.forward()
 
@@ -119,11 +138,19 @@ class SolverWrapper(object):
 
             timer.tic()
 
-            rpn_loss_cls_value, rpn_loss_box_value, loss_cls_value, loss_box_value, \
-                summary_str, _ = sess.run([rpn_cross_entropy, rpn_loss_box, cross_entropy, loss_box, summary_op, train_op],
-                                          feed_dict=feed_dict, options=run_options, run_metadata=run_metadata)
+            fetch_list = [rpn_cross_entropy, rpn_loss_box, cross_entropy, loss_box, summary_op, train_op]
+            rpn_loss_cls_value, rpn_loss_box_value, loss_cls_value, loss_box_value, summary_str,\
+                _ = sess.run(fetches=fetch_list, feed_dict=feed_dict, options=run_options, run_metadata=run_metadata)
 
             self.writer.add_summary(summary=summary_str, global_step=global_step.eval())
+
+            if cfg.TRAIN.SOLVER == 'Adam':
+                lr = opt._lr_t.eval()
+            elif cfg.TRAIN.SOLVER == 'RMS' or cfg.TRAIN.SOLVER == 'Momentum':
+                lr = opt._learning_rate_tensor.eval()
+            else:
+                raise NotImplementedError
+
             timer.toc()
 
             if cfg.TRAIN.DEBUG_TIMELINE:
@@ -137,7 +164,7 @@ class SolverWrapper(object):
                     'iter: %d / %d, total loss: %.4f, rpn_loss_cls: %.4f, rpn_loss_box: %.4f, loss_cls: %.4f, '
                     'loss_box: %.4f, lr: %f' %
                     (iter + 1, max_iters, rpn_loss_cls_value + rpn_loss_box_value + loss_cls_value + loss_box_value,
-                     rpn_loss_cls_value, rpn_loss_box_value, loss_cls_value, loss_box_value, lr.eval()))
+                     rpn_loss_cls_value, rpn_loss_box_value, loss_cls_value, loss_box_value, lr))
                 print('speed: {:.3f}s / iter'.format(timer.average_time))
 
             if (iter+1) % cfg.TRAIN.SNAPSHOT_ITERS == 0:
