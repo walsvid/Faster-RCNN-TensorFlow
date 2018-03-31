@@ -7,4 +7,5 @@
 
 from .VGG16 import VGG16
 from .Resnet50 import Resnet50
+from .Resnet101 import Resnet101
 from . import factory

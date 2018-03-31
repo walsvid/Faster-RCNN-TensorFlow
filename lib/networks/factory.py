@@ -9,6 +9,7 @@
 
 import networks.VGG16
 import networks.Resnet50
+import networks.Resnet101
 import pdb
 import tensorflow as tf
 
@@ -21,6 +22,8 @@ def _register():
     __sets['VGGnet_test'] = networks.VGG16(is_train=False)
     __sets['Resnet50_train'] = networks.Resnet50(is_train=True)
     __sets['Resnet50_test'] = networks.Resnet50(is_train=False)
+    __sets['Resnet101_train'] = networks.Resnet101(is_train=True)
+    __sets['Resnet101_test'] = networks.Resnet101(is_train=False)
 
 
 def get_network(name):
