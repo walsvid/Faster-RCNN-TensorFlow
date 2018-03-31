@@ -98,7 +98,7 @@ class SolverWrapper(object):
             opt = tf.train.RMSPropOptimizer(cfg.TRAIN.LEARNING_RATE)
         else:
             momentum_lr = tf.train.exponential_decay(cfg.TRAIN.LEARNING_RATE, global_step,
-                                                 cfg.TRAIN.STEPSIZE, 0.1, staircase=True)
+                                                     cfg.TRAIN.STEPSIZE, cfg.TRAIN.GAMMA, staircase=True)
             momentum = cfg.TRAIN.MOMENTUM
             opt = tf.train.MomentumOptimizer(momentum_lr, momentum)
 
@@ -118,10 +118,6 @@ class SolverWrapper(object):
         last_snapshot_iter = -1
         timer = Timer()
         for iter in range(max_iters):
-            # learning rate
-            if iter != 0 and iter % cfg.TRAIN.STEPSIZE == 0:
-                sess.run(tf.assign(momentum_lr, momentum_lr.eval() * cfg.TRAIN.GAMMA))
-                # sess.run(tf.assign(lr, 0.0))
 
             # get one batch
             blobs = data_layer.forward()
