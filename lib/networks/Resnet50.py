@@ -1,6 +1,5 @@
 import tensorflow as tf
 from networks.network import Network
-from fast_rcnn.config import cfg
 
 
 class Resnet50(Network):
