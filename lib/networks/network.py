@@ -57,10 +57,6 @@ class Network(object):
         self.losses = {}
         self.bbox_weights, self.bbox_biases = None, None
         self.bbox_weights_assign, self.bbox_bias_assign = None, None
-        self.rpn_bbox_inside_weights = None
-        self.rpn_bbox_outside_weights = None
-        self.bbox_inside_weights = None
-        self.bbox_outside_weights = None
 
     def setup(self):
         raise NotImplementedError('Must be subclassed.')
@@ -418,14 +414,14 @@ class Network(object):
         outside_mul = tf.multiply(bbox_outside_weights, smooth_l1_result)
         return outside_mul
 
-    def smooth_l1_loss_v1(self, sigma, deltas):
-        sigma2 = sigma * sigma
-        deltas_abs = tf.abs(deltas)
-        smooth_l1_sign = tf.cast(tf.less(deltas_abs, 1.0 / sigma2), tf.float32)
-        smooth_l1_option1 = tf.square(deltas) * 0.5 * sigma2 * smooth_l1_sign
-        smooth_l1_option2 = (deltas_abs - 0.5 / sigma2) * tf.abs(smooth_l1_sign - 1)
-        smooth_l1_result = smooth_l1_option1 + smooth_l1_option2
-        return smooth_l1_result
+    # def smooth_l1_loss_v1(self, sigma, deltas):
+    #     sigma2 = sigma * sigma
+    #     deltas_abs = tf.abs(deltas)
+    #     smooth_l1_sign = tf.cast(tf.less(deltas_abs, 1.0 / sigma2), tf.float32)
+    #     smooth_l1_option1 = tf.square(deltas) * 0.5 * sigma2 * smooth_l1_sign
+    #     smooth_l1_option2 = (deltas_abs - 0.5 / sigma2) * tf.abs(smooth_l1_sign - 1)
+    #     smooth_l1_result = smooth_l1_option1 + smooth_l1_option2
+    #     return smooth_l1_result
 
     def build_loss(self, ohem=False):
         # RPN cls loss
@@ -443,10 +439,6 @@ class Network(object):
 
         rpn_smooth_l1 = self.smooth_l1_loss(3.0, rpn_bbox_pred, rpn_bbox_targets, rpn_bbox_inside_weights, rpn_bbox_outside_weights)
         rpn_loss_box = tf.reduce_mean(tf.reduce_sum(rpn_smooth_l1, reduction_indices=[1, 2, 3]))
-        # rpn_smooth_l1 = self.smooth_l1_loss_v1(3.0, rpn_bbox_inside_weights * (rpn_bbox_pred - rpn_bbox_targets))
-        # fg_keep = tf.equal(rpn_label, 1)
-        # rpn_loss_box_n = tf.reduce_sum(rpn_smooth_l1, axis=[1])
-        # rpn_loss_box = tf.reduce_sum(rpn_loss_box_n) / (tf.reduce_sum(tf.cast(fg_keep, tf.float32)) + 1.0)
 
         # R-CNN cls loss
         cls_score = self.get_output('cls_score')
@@ -462,9 +454,6 @@ class Network(object):
         smooth_l1 = self.smooth_l1_loss(1.0, bbox_pred, bbox_targets, bbox_inside_weights, bbox_outside_weights)
         loss_box = tf.reduce_mean(tf.reduce_sum(smooth_l1, reduction_indices=[1]))
 
-        # smooth_l1 = bbox_outside_weights * self.smooth_l1_loss_v1(1.0, bbox_inside_weights * (bbox_pred - bbox_targets))
-        # loss_box = tf.reduce_mean(tf.reduce_sum(smooth_l1, axis=[1]))
-
         # final loss
         loss = cross_entropy + loss_box + rpn_cross_entropy + rpn_loss_box
 
@@ -478,11 +467,6 @@ class Network(object):
         self.losses['rpn_cross_entropy'] = rpn_cross_entropy
         self.losses['rpn_loss_box'] = rpn_loss_box
         self.losses['loss'] = loss
-
-        self.rpn_bbox_inside_weights = rpn_bbox_inside_weights
-        self.rpn_bbox_outside_weights = rpn_bbox_outside_weights
-        self.bbox_inside_weights = bbox_inside_weights
-        self.bbox_outside_weights = bbox_outside_weights
 
         return loss, cross_entropy, loss_box, rpn_cross_entropy, rpn_loss_box
 
