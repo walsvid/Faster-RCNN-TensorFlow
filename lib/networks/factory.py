@@ -1,8 +1,6 @@
 """Factory method for easily getting imdbs by name."""
 
-import networks.VGG16
-import networks.Resnet50
-import networks.Resnet101
+import networks
 
 __sets = {}
 
@@ -14,7 +12,8 @@ def _register():
     __sets['Resnet50_test'] = networks.Resnet50(is_train=False)
     __sets['Resnet101_train'] = networks.Resnet101(is_train=True)
     __sets['Resnet101_test'] = networks.Resnet101(is_train=False)
-
+    __sets['MobilenetV1_train'] = networks.MobilenetV1(is_train=True)
+    __sets['MobilenetV1_test'] = networks.MobilenetV1(is_train=False)
 
 def get_network(name):
     """Get a network by name."""
