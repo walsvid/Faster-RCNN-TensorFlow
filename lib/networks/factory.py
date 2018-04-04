@@ -14,6 +14,8 @@ def _register():
     __sets['Resnet101_test'] = networks.Resnet101(is_train=False)
     __sets['MobilenetV1_train'] = networks.MobilenetV1(is_train=True)
     __sets['MobilenetV1_test'] = networks.MobilenetV1(is_train=False)
+    __sets['PVAnet_train'] = networks.PVAnet(is_train=True)
+    __sets['PVAnet_test'] = networks.PVAnet(is_train=False)
 
 def get_network(name):
     """Get a network by name."""
