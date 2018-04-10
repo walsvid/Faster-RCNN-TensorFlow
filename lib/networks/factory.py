@@ -1,17 +1,6 @@
-# --------------------------------------------------------
-# SubCNN_TF
-# Copyright (c) 2016 CVGL Stanford
-# Licensed under The MIT License [see LICENSE for details]
-# Written by Yu Xiang
-# --------------------------------------------------------
-
 """Factory method for easily getting imdbs by name."""
 
-import networks.VGG16
-import networks.Resnet50
-import pdb
-import tensorflow as tf
-
+import networks
 
 __sets = {}
 
@@ -21,12 +10,16 @@ def _register():
     __sets['VGGnet_test'] = networks.VGG16(is_train=False)
     __sets['Resnet50_train'] = networks.Resnet50(is_train=True)
     __sets['Resnet50_test'] = networks.Resnet50(is_train=False)
-
+    __sets['Resnet101_train'] = networks.Resnet101(is_train=True)
+    __sets['Resnet101_test'] = networks.Resnet101(is_train=False)
+    __sets['MobilenetV1_train'] = networks.MobilenetV1(is_train=True)
+    __sets['MobilenetV1_test'] = networks.MobilenetV1(is_train=False)
+    __sets['PVAnet_train'] = networks.PVAnet(is_train=True)
+    __sets['PVAnet_test'] = networks.PVAnet(is_train=False)
 
 def get_network(name):
     """Get a network by name."""
     _register()
-    print("!!!!!!!!!!!!!!!!!!!!!!!!")
     if name not in __sets:
         raise KeyError('Unknown dataset: {}'.format(name))
     net = __sets[name].setup()

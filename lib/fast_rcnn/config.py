@@ -39,6 +39,9 @@ __C.NCLASSES = 21
 
 __C.TRAIN = edict()
 __C.NET_NAME = 'VGGnet'
+# Adam, Momentum, RMS
+__C.TRAIN.SOLVER = 'Momentum'
+__C.TRAIN.WITH_CLIP = True
 # learning rate
 __C.TRAIN.LEARNING_RATE = 0.001
 __C.TRAIN.MOMENTUM = 0.9
