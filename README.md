@@ -11,7 +11,9 @@ What's New:
 - [x] PSRoI Pooling
 - [ ] OHEM a.k.a Online Hard Example Miniing
 - [ ] RoI Align
-- [x] More basenet
+- [x] ResNet50
+- [x] PVANet
+- [x] MobileNet v1
 
 Reference:
 ### Acknowledgments: 
@@ -147,4 +149,4 @@ tensorboard --logdir=./logs
 
 
 Release:
-`v0.5.0`
+`v0.5.1`
